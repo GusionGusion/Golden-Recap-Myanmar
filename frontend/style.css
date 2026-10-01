@@ -2265,7 +2265,88 @@ select:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+/* =========================================================
+   COMPACT MYANMAR SUBTITLE BOX
+   ========================================================= */
 
+.subtitle-style-preview {
+    min-height: 58px;
+
+    padding: 8px 10px;
+
+    margin-top: 7px;
+
+    border-radius: 9px;
+}
+
+
+.subtitle-preview-text {
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+
+/* Subtitle setting block */
+
+#subtitleFont,
+#subtitleSize {
+    min-height: 36px;
+}
+
+
+/* Subtitle section spacing */
+
+.setting-block:has(#subtitleFont) {
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+
+.setting-block:has(#subtitleFont) .setting-block-header {
+    margin-bottom: 8px;
+}
+
+
+.setting-block:has(#subtitleFont) .setting-block-header strong {
+    font-size: 10px;
+}
+
+
+.setting-block:has(#subtitleFont) .setting-block-header small {
+    font-size: 8px;
+}
+
+
+.setting-block:has(#subtitleFont) .setting-group {
+    margin-bottom: 9px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .setting-block:has(#subtitleFont) {
+        margin-top: 7px;
+        padding: 9px;
+        border-radius: 11px;
+    }
+
+    .setting-block:has(#subtitleFont) .setting-block-header {
+        margin-bottom: 7px;
+    }
+
+    .subtitle-style-preview {
+        min-height: 52px;
+        padding: 7px 8px;
+        margin-top: 6px;
+    }
+
+    .subtitle-preview-text {
+        font-size: 13px;
+    }
+}
 
 /* =========================================================
    END
