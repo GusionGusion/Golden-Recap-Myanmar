@@ -830,40 +830,78 @@
 
                     <div class="setting-group">
 
-                        <label
-                            for="subtitleFont"
-                            class="setting-label"
-                        >
-                            Font
-                        </label>
+    <label
+        for="subtitleFont"
+        class="setting-label"
+    >
+        Font
+    </label>
 
-                        <select
-                            id="subtitleFont"
-                            class="setting-select"
-                        >
+    <select
+        id="subtitleFont"
+        class="setting-select"
+    >
 
-                            <option
-                                value="Noto Sans Myanmar"
-                                selected
-                            >
-                                Noto Sans Myanmar
-                            </option>
+        <option
+            value="Noto Sans Myanmar"
+            selected
+        >
+            Noto Sans Myanmar
+        </option>
 
-                            <option value="Pyidaungsu">
-                                Pyidaungsu
-                            </option>
+        <option value="Pyidaungsu">
+            Pyidaungsu
+        </option>
 
-                            <option value="Myanmar Text">
-                                Myanmar Text
-                            </option>
+        <option value="Myanmar Text">
+            Myanmar Text
+        </option>
 
-                            <option value="custom">
-                                Custom Font
-                            </option>
+        <option value="custom">
+            Custom Font
+        </option>
 
-                        </select>
+    </select>
 
-                    </div>
+
+    <!-- Custom Font Upload -->
+    <div
+        id="customFontSettings"
+        class="custom-font-settings hidden"
+    >
+
+        <label
+            for="customFontFile"
+            class="custom-font-upload"
+        >
+
+            <span class="custom-font-upload-icon">
+                📁
+            </span>
+
+            <span>
+                Upload Custom Font
+            </span>
+
+        </label>
+
+        <input
+            type="file"
+            id="customFontFile"
+            accept=".ttf,.otf,font/ttf,font/otf"
+            hidden
+        >
+
+        <div
+            id="customFontName"
+            class="custom-font-name"
+        >
+            No font selected
+        </div>
+
+    </div>
+
+</div>
 
 
                     <div class="setting-group">
