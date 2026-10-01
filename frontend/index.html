@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Golden Recap MM - AI Movie and Documentary Recap Studio"
+    >
+
+    <title>Golden Recap MM</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <!-- =====================================================
+         APP CONTAINER
+         ===================================================== -->
+
+    <main class="app-container">
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <header class="app-header">
+
+            <div class="brand-section">
+
+                <div class="brand-icon">
+                    🎬
+                </div>
+
+                <div class="brand-text">
+
+                    <h1>
+                        Golden Recap MM
+                    </h1>
+
+                    <p>
+                        AI Movie &amp; Documentary Recap Studio
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Backend Status -->
+
+            <div
+                class="backend-status"
+                id="backendStatus"
+            >
+
+                <span
+                    class="status-dot"
+                    id="statusDot"
+                ></span>
+
+                <span
+                    id="statusText"
+                >
+                    Backend Connecting...
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             MAIN WORKSPACE
+             ================================================= -->
+
+        <section
+            class="workspace"
+            id="workspace"
+        >
+
+
+            <!-- =============================================
+                 STEP 1 — RECAP MODE
+                 ============================================= -->
+
+            <section
+                class="card mode-card"
+                id="modeSection"
+            >
+
+                <div class="section-header">
+
+                    <div>
+
+                        <span class="section-number">
+                            01
+                        </span>
+
+                        <div class="section-title-group">
+
+                            <h2>
+                                Recap Mode
+                            </h2>
+
+                            <p>
+                                Choose the type of recap
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="mode-options">
+
+                    <button
+                        type="button"
+                        class="mode-option active"
+                        data-mode="movie"
+                        id="movieModeButton"
+                    >
+
+                        <span class="mode-icon">
+                            🎬
+                        </span>
+
+                        <span class="mode-content">
+
+                            <strong>
+                                Movie Recap
+                            </strong>
+
+                            <small>
+                                Story-focused movie recap
+                            </small>
+
+                        </span>
+
+                        <span class="selection-indicator">
+                            ✓
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="mode-option"
+                        data-mode="documentary"
+                        id="documentaryModeButton"
+                    >
+
+                        <span class="mode-icon">
+                            🦁
+                        </span>
+
+                        <span class="mode-content">
+
+                            <strong>
+                                Documentary Recap
+                            </strong>
+
+                            <small>
+                                Nature &amp; documentary recap
+                            </small>
+
+                        </span>
+
+                        <span class="selection-indicator">
+                            ✓
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 STEP 2 — VIDEO SOURCE
+                 ============================================= -->
+
+            <section
+                class="card source-card"
+                id="sourceSection"
+            >
+
+                <div class="section-header">
+
+                    <div>
+
+                        <span class="section-number">
+                            02
+                        </span>
+
+                        <div class="section-title-group">
+
+                            <h2>
+                                Video Source
+                            </h2>
+
+                            <p>
+                                Upload a video or provide a link
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Source tabs -->
+
+                <div
+                    class="source-tabs"
+                    role="tablist"
+                >
+
+                    <button
+                        type="button"
+                        class="source-tab active"
+                        data-source="upload"
+                        id="uploadTab"
+                    >
+                        📱 Local Upload
+                    </button>
+
+                    <button
+                        type="button"
+                        class="source-tab"
+                        data-source="tiktok"
+                        id="tiktokTab"
+                    >
+                        🎵 TikTok Link
+                    </button>
+
+                    <button
+                        type="button"
+                        class="source-tab"
+                        data-source="rednote"
+                        id="rednoteTab"
+                    >
+                        📕 RedNote Link
+                    </button>
+
+                </div>
+
+
+                <!-- Local Upload -->
+
+                <div
+                    class="source-panel active"
+                    id="uploadPanel"
+                    data-panel="upload"
+                >
+
+                    <label
+                        for="videoFile"
+                        class="upload-area"
+                    >
+
+                        <div class="upload-icon">
+                            ⬆
+                        </div>
+
+                        <strong>
+                            Upload Video
+                        </strong>
+
+                        <span>
+                            Tap to select a video
+                        </span>
+
+                        <small>
+                            MP4 • MOV • AVI • MKV • WEBM
+                        </small>
+
+                    </label>
+
+                    <input
+                        type="file"
+                        id="videoFile"
+                        accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm"
+                        hidden
+                    >
+
+                </div>
+
+
+                <!-- TikTok -->
+
+                <div
+                    class="source-panel"
+                    id="tiktokPanel"
+                    data-panel="tiktok"
+                >
+
+                    <label
+                        for="tiktokUrl"
+                        class="input-label"
+                    >
+                        TikTok Video Link
+                    </label>
+
+                    <div class="url-input-wrapper">
+
+                        <input
+                            type="url"
+                            id="tiktokUrl"
+                            class="url-input"
+                            placeholder="Paste TikTok video link"
+                            autocomplete="off"
+                        >
+
+                        <button
+                            type="button"
+                            class="clear-input"
+                            data-clear="tiktokUrl"
+                            aria-label="Clear TikTok URL"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RedNote -->
+
+                <div
+                    class="source-panel"
+                    id="rednotePanel"
+                    data-panel="rednote"
+                >
+
+                    <label
+                        for="rednoteUrl"
+                        class="input-label"
+                    >
+                        RedNote Video Link
+                    </label>
+
+                    <div class="url-input-wrapper">
+
+                        <input
+                            type="url"
+                            id="rednoteUrl"
+                            class="url-input"
+                            placeholder="Paste RedNote video link"
+                            autocomplete="off"
+                        >
+
+                        <button
+                            type="button"
+                            class="clear-input"
+                            data-clear="rednoteUrl"
+                            aria-label="Clear RedNote URL"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Video Information -->
+
+                <div
+                    class="video-info-card hidden"
+                    id="videoInfoCard"
+                >
+
+                    <div class="video-ready-header">
+
+                        <span class="ready-icon">
+                            ✓
+                        </span>
+
+                        <strong>
+                            Video Ready
+                        </strong>
+
+                    </div>
+
+
+                    <div class="video-meta-grid">
+
+                        <div class="meta-item">
+
+                            <span>
+                                Name
+                            </span>
+
+                            <strong id="videoName">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span>
+                                File Size
+                            </span>
+
+                            <strong id="videoSize">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span>
+                                Length
+                            </span>
+
+                            <strong id="videoDuration">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span>
+                                Resolution
+                            </span>
+
+                            <strong id="videoResolution">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span>
+                                FPS
+                            </span>
+
+                            <strong id="videoFps">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span>
+                                Format
+                            </span>
+
+                            <strong id="videoFormat">
+                                —
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 STEP 3 — RECAP SETTINGS
+                 ============================================= -->
+
+            <section
+                class="card settings-card"
+                id="settingsSection"
+            >
+
+                <div class="section-header">
+
+                    <div>
+
+                        <span class="section-number">
+                            03
+                        </span>
+
+                        <div class="section-title-group">
+
+                            <h2>
+                                Recap Settings
+                            </h2>
+
+                            <p>
+                                Customize your final video
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Video Ratio -->
+
+                <div class="setting-group">
+
+                    <label
+                        for="videoRatio"
+                        class="setting-label"
+                    >
+                        Video Ratio
+                    </label>
+
+                    <select
+                        id="videoRatio"
+                        class="setting-select"
+                    >
+
+                        <option value="9:16" selected>
+                            9:16
+                        </option>
+
+                        <option value="original">
+                            Original
+                        </option>
+
+                        <option value="16:9">
+                            16:9
+                        </option>
+
+                        <option value="4:3">
+                            4:3
+                        </option>
+
+                        <option value="3:4">
+                            3:4
+                        </option>
+
+                        <option value="1:1">
+                            1:1
+                        </option>
+
+                        <option value="2:3">
+                            2:3
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Voice -->
+
+                <div class="setting-group">
+
+                    <label
+                        for="voice"
+                        class="setting-label"
+                    >
+                        Voiceover
+                    </label>
+
+                    <select
+                        id="voice"
+                        class="setting-select"
+                    >
+
+                        <option
+                            value="thiha"
+                            selected
+                        >
+                            Thiha
+                        </option>
+
+                        <option value="nila">
+                            Nila
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Voice Speed -->
+
+                <div class="setting-group">
+
+                    <label
+                        for="voiceSpeed"
+                        class="setting-label"
+                    >
+                        Voice Speed
+                    </label>
+
+                    <select
+                        id="voiceSpeed"
+                        class="setting-select"
+                    >
+
+                        <option value="1.0">
+                            1.0x
+                        </option>
+
+                        <option value="1.1">
+                            1.1x
+                        </option>
+
+                        <option value="1.15">
+                            1.15x
+                        </option>
+
+                        <option
+                            value="1.2"
+                            selected
+                        >
+                            1.2x
+                        </option>
+
+                        <option value="1.25">
+                            1.25x
+                        </option>
+
+                        <option value="1.3">
+                            1.3x
+                        </option>
+
+                        <option value="1.35">
+                            1.35x
+                        </option>
+
+                        <option value="1.4">
+                            1.4x
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- =========================================
+                     FREEZE FRAME
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                Freeze Frame
+                            </strong>
+
+                            <small>
+                                Add cinematic freeze moments
+                            </small>
+
+                        </div>
+
+
+                        <label class="toggle">
+
+                            <input
+                                type="checkbox"
+                                id="freezeEnabled"
+                                checked
+                            >
+
+                            <span class="toggle-slider"></span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div
+                        class="conditional-settings"
+                        id="freezeSettings"
+                    >
+
+                        <div class="setting-group">
+
+                            <label
+                                for="freezeInterval"
+                                class="setting-label"
+                            >
+                                Interval
+                            </label>
+
+                            <div class="range-row">
+
+                                <input
+                                    type="range"
+                                    id="freezeInterval"
+                                    min="5"
+                                    max="15"
+                                    step="1"
+                                    value="8"
+                                >
+
+                                <output
+                                    id="freezeIntervalValue"
+                                >
+                                    8 sec
+                                </output>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="setting-group">
+
+                            <label
+                                for="freezeDuration"
+                                class="setting-label"
+                            >
+                                Duration
+                            </label>
+
+                            <div class="range-row">
+
+                                <input
+                                    type="range"
+                                    id="freezeDuration"
+                                    min="0.5"
+                                    max="5"
+                                    step="0.5"
+                                    value="2"
+                                >
+
+                                <output
+                                    id="freezeDurationValue"
+                                >
+                                    2 sec
+                                </output>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="setting-group">
+
+                            <label
+                                for="freezeZoom"
+                                class="setting-label"
+                            >
+                                Freeze Zoom
+                            </label>
+
+                            <select
+                                id="freezeZoom"
+                                class="setting-select"
+                            >
+
+                                <option value="1.1">
+                                    1.1x
+                                </option>
+
+                                <option value="1.15">
+                                    1.15x
+                                </option>
+
+                                <option
+                                    value="1.2"
+                                    selected
+                                >
+                                    1.2x
+                                </option>
+
+                                <option value="1.25">
+                                    1.25x
+                                </option>
+
+                                <option value="1.3">
+                                    1.3x
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     SUBTITLE
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                Myanmar Subtitle
+                            </strong>
+
+                            <small>
+                                Subtitle appearance
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="setting-group">
+
+                        <label
+                            for="subtitleFont"
+                            class="setting-label"
+                        >
+                            Font
+                        </label>
+
+                        <select
+                            id="subtitleFont"
+                            class="setting-select"
+                        >
+
+                            <option
+                                value="Noto Sans Myanmar"
+                                selected
+                            >
+                                Noto Sans Myanmar
+                            </option>
+
+                            <option value="Pyidaungsu">
+                                Pyidaungsu
+                            </option>
+
+                            <option value="Myanmar Text">
+                                Myanmar Text
+                            </option>
+
+                            <option value="custom">
+                                Custom Font
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="setting-group">
+
+                        <label
+                            for="subtitleSize"
+                            class="setting-label"
+                        >
+                            Font Size
+                        </label>
+
+                        <div class="range-row">
+
+                            <input
+                                type="range"
+                                id="subtitleSize"
+                                min="10"
+                                max="100"
+                                step="1"
+                                value="40"
+                            >
+
+                            <output
+                                id="subtitleSizeValue"
+                            >
+                                40 px
+                            </output>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="subtitle-style-preview">
+
+                        <span class="subtitle-preview-text">
+                            မြန်မာစာတန်းထိုး
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     BLUR TOOL
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                Blur Tool
+                            </strong>
+
+                            <small>
+                                Hide original subtitles
+                            </small>
+
+                        </div>
+
+
+                        <label class="toggle">
+
+                            <input
+                                type="checkbox"
+                                id="blurEnabled"
+                            >
+
+                            <span class="toggle-slider"></span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div
+                        class="conditional-editor hidden"
+                        id="blurEditor"
+                    >
+
+                        <div class="editor-placeholder">
+
+                            <div class="editor-icon">
+                                ◈
+                            </div>
+
+                            <strong>
+                                Blur Area Editor
+                            </strong>
+
+                            <p>
+                                Video editor will appear here
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     LOGO
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                Logo Image
+                            </strong>
+
+                            <small>
+                                Add your channel logo
+                            </small>
+
+                        </div>
+
+
+                        <label class="toggle">
+
+                            <input
+                                type="checkbox"
+                                id="logoEnabled"
+                            >
+
+                            <span class="toggle-slider"></span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div
+                        class="conditional-settings hidden"
+                        id="logoSettings"
+                    >
+
+                        <div class="setting-group">
+
+                            <label
+                                for="logoFile"
+                                class="setting-label"
+                            >
+                                Logo Image
+                            </label>
+
+                            <input
+                                type="file"
+                                id="logoFile"
+                                accept="image/png,image/jpeg,image/webp"
+                                class="file-input"
+                            >
+
+                        </div>
+
+
+                        <div class="setting-group">
+
+                            <label
+                                for="logoPosition"
+                                class="setting-label"
+                            >
+                                Position
+                            </label>
+
+                            <select
+                                id="logoPosition"
+                                class="setting-select"
+                            >
+
+                                <option value="top-left">
+                                    Top Left
+                                </option>
+
+                                <option
+                                    value="top-right"
+                                    selected
+                                >
+                                    Top Right
+                                </option>
+
+                                <option value="bottom-left">
+                                    Bottom Left
+                                </option>
+
+                                <option value="bottom-right">
+                                    Bottom Right
+                                </option>
+
+                                <option value="custom">
+                                    Custom
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            id="logoAdjustButton"
+                        >
+                            Adjust Logo Position
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     CAPTION
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                Social Caption
+                            </strong>
+
+                            <small>
+                                Generate a 1–2 line social hook
+                            </small>
+
+                        </div>
+
+
+                        <label class="toggle">
+
+                            <input
+                                type="checkbox"
+                                id="captionEnabled"
+                                checked
+                            >
+
+                            <span class="toggle-slider"></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     THUMBNAIL
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                AI Thumbnail
+                            </strong>
+
+                            <small>
+                                Generate a strong thumbnail hook
+                            </small>
+
+                        </div>
+
+
+                        <label class="toggle">
+
+                            <input
+                                type="checkbox"
+                                id="thumbnailEnabled"
+                                checked
+                            >
+
+                            <span class="toggle-slider"></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     SPLIT MODE
+                     ========================================= -->
+
+                <div class="setting-block">
+
+                    <div class="setting-block-header">
+
+                        <div>
+
+                            <strong>
+                                Split Mode
+                            </strong>
+
+                            <small>
+                                Control multi-part output
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="setting-group">
+
+                        <label
+                            for="splitMode"
+                            class="setting-label"
+                        >
+                            Mode
+                        </label>
+
+                        <select
+                            id="splitMode"
+                            class="setting-select"
+                        >
+
+                            <option
+                                value="auto"
+                                selected
+                            >
+                                Auto
+                            </option>
+
+                            <option value="manual">
+                                Manual
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div
+                        class="conditional-settings hidden"
+                        id="manualSplitSettings"
+                    >
+
+                        <div class="setting-group">
+
+                            <label
+                                for="manualSplitLength"
+                                class="setting-label"
+                            >
+                                Part Length
+                            </label>
+
+                            <input
+                                type="number"
+                                id="manualSplitLength"
+                                class="number-input"
+                                min="30"
+                                value="60"
+                            >
+
+                            <small class="input-help">
+                                Seconds
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 GENERATE
+                 ============================================= -->
+
+            <section
+                class="generate-section"
+                id="generateSection"
+            >
+
+                <button
+                    type="button"
+                    class="generate-button"
+                    id="generateButton"
+                >
+
+                    <span class="generate-icon">
+                        ✨
+                    </span>
+
+                    <span>
+                        Generate Now
+                    </span>
+
+                </button>
+
+                <p class="generate-note">
+                    Your selected settings will be saved for next time.
+                </p>
+
+            </section>
+
+
+        </section>
+
+
+        <!-- =================================================
+             PROCESSING VIEW
+             ================================================= -->
+
+        <section
+            class="processing-view hidden"
+            id="processingView"
+        >
+
+            <div class="progress-container">
+
+                <div
+                    class="progress-circle"
+                    id="progressCircle"
+                >
+
+                    <div class="progress-inner">
+
+                        <strong
+                            id="progressPercent"
+                        >
+                            0%
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <h2
+                    id="processingStage"
+                >
+                    Preparing...
+                </h2>
+
+
+                <p
+                    id="processingDescription"
+                >
+                    Please wait while Golden Recap MM processes your video.
+                </p>
+
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    id="cancelButton"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FINAL RESULT VIEW
+             ================================================= -->
+
+        <section
+            class="result-view hidden"
+            id="resultView"
+        >
+
+            <div class="result-header">
+
+                <div class="result-success-icon">
+                    ✓
+                </div>
+
+                <h2>
+                    Final Video Ready
+                </h2>
+
+                <p>
+                    Your recap has been successfully generated.
+                </p>
+
+            </div>
+
+
+            <div
+                class="result-video-container"
+                id="resultVideoContainer"
+            >
+
+                <div class="result-video-placeholder">
+
+                    <span>
+                        ▶
+                    </span>
+
+                    <p>
+                        Final video will appear here
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="result-parts"
+                id="resultParts"
+            >
+                <!-- Generated parts will be inserted here -->
+            </div>
+
+
+            <div class="result-actions">
+
+                <button
+                    type="button"
+                    class="primary-result-button"
+                    id="downloadVideoButton"
+                >
+                    Download Video
+                </button>
+
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="downloadThumbnailButton"
+                >
+                    Download Thumbnail
+                </button>
+
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="copyCaptionButton"
+                >
+                    Copy Caption
+                </button>
+
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="newRecapButton"
+                >
+                    Create Another Recap
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FOOTER
+             ================================================= -->
+
+        <footer class="app-footer">
+
+            <p>
+                Golden Recap MM
+            </p>
+
+            <span>
+                AI Recap Studio
+            </span>
+
+        </footer>
+
+    </main>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script
+        src="app.js"
+        defer
+    ></script>
+
+</body>
+</html>
