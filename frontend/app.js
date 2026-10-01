@@ -27,7 +27,7 @@ const qsa = (selector, parent = document) =>
 const defaultSettings = {
     mode: "movie",
 
-    source: "local",
+    source: "upload",
 
     videoRatio: "9:16",
 
@@ -66,25 +66,31 @@ let settings = {
    STORAGE
    ========================================================= */
 
-const STORAGE_KEY = "golden_recap_mm_settings_v1";
+const STORAGE_KEY =
+    "golden_recap_mm_settings_v1";
 
 
 function loadSettings() {
 
     try {
 
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
 
         if (!saved) {
             return;
         }
 
-        const parsed = JSON.parse(saved);
+        const parsed =
+            JSON.parse(saved);
 
         if (
             parsed &&
             typeof parsed === "object"
         ) {
+
             settings = {
                 ...defaultSettings,
                 ...parsed
@@ -131,6 +137,7 @@ function saveSettings() {
 let selectedVideoFile = null;
 
 let videoMetadata = {
+
     name: "",
     size: 0,
     duration: 0,
@@ -167,6 +174,12 @@ document.addEventListener(
 
         setupSplitMode();
 
+        setupCustomFont();
+
+        setupUrlInputs();
+
+        setupClearButtons();
+
         setupGenerateButton();
 
         setupCancelButton();
@@ -178,9 +191,6 @@ document.addEventListener(
         setupBackendStatus();
 
         updateAllUI();
-        
-        setupCustomFont();
-
     }
 );
 
@@ -191,46 +201,53 @@ document.addEventListener(
 
 function setupModeButtons() {
 
-    const buttons = qsa(
-        "[data-mode]"
-    );
+    const buttons =
+        qsa("[data-mode]");
 
-    buttons.forEach((button) => {
+    buttons.forEach(
+        (button) => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                const mode =
-                    button.dataset.mode;
+                    const mode =
+                        button.dataset.mode;
 
-                if (!mode) {
-                    return;
+                    if (!mode) {
+                        return;
+                    }
+
+                    settings.mode =
+                        mode;
+
+                    buttons.forEach(
+                        (item) => {
+
+                            const active =
+                                item === button;
+
+                            item.classList.toggle(
+                                "active",
+                                active
+                            );
+
+                            item.setAttribute(
+                                "aria-selected",
+                                active
+                                    ? "true"
+                                    : "false"
+                            );
+                        }
+                    );
+
+                    saveSettings();
+
+                    updateModeUI();
                 }
-
-                settings.mode = mode;
-
-                buttons.forEach((item) => {
-
-                    item.classList.toggle(
-                        "active",
-                        item === button
-                    );
-
-                    item.setAttribute(
-                        "aria-selected",
-                        item === button
-                            ? "true"
-                            : "false"
-                    );
-                });
-
-                saveSettings();
-
-                updateModeUI();
-            }
-        );
-    });
+            );
+        }
+    );
 }
 
 
@@ -241,27 +258,28 @@ function updateModeUI() {
             ? "documentary"
             : "movie";
 
-    const buttons = qsa(
-        "[data-mode]"
+    const buttons =
+        qsa("[data-mode]");
+
+    buttons.forEach(
+        (button) => {
+
+            const active =
+                button.dataset.mode === mode;
+
+            button.classList.toggle(
+                "active",
+                active
+            );
+
+            button.setAttribute(
+                "aria-selected",
+                active
+                    ? "true"
+                    : "false"
+            );
+        }
     );
-
-    buttons.forEach((button) => {
-
-        const active =
-            button.dataset.mode === mode;
-
-        button.classList.toggle(
-            "active",
-            active
-        );
-
-        button.setAttribute(
-            "aria-selected",
-            active
-                ? "true"
-                : "false"
-        );
-    });
 }
 
 
@@ -271,78 +289,91 @@ function updateModeUI() {
 
 function setupSourceTabs() {
 
-    const tabs = qsa(
-        "[data-source]"
-    );
+    const tabs =
+        qsa("[data-source]");
 
-    tabs.forEach((tab) => {
+    tabs.forEach(
+        (tab) => {
 
-        tab.addEventListener(
-            "click",
-            () => {
+            tab.addEventListener(
+                "click",
+                () => {
 
-                const source =
-                    tab.dataset.source;
+                    const source =
+                        tab.dataset.source;
 
-                if (!source) {
-                    return;
+                    if (!source) {
+                        return;
+                    }
+
+                    settings.source =
+                        source;
+
+                    tabs.forEach(
+                        (item) => {
+
+                            const active =
+                                item === tab;
+
+                            item.classList.toggle(
+                                "active",
+                                active
+                            );
+
+                            item.setAttribute(
+                                "aria-selected",
+                                active
+                                    ? "true"
+                                    : "false"
+                            );
+                        }
+                    );
+
+                    updateSourceUI();
+
+                    updateGenerateButton();
+
+                    saveSettings();
                 }
-
-                settings.source = source;
-
-                tabs.forEach((item) => {
-
-                    item.classList.toggle(
-                        "active",
-                        item === tab
-                    );
-
-                    item.setAttribute(
-                        "aria-selected",
-                        item === tab
-                            ? "true"
-                            : "false"
-                    );
-                });
-
-                updateSourceUI();
-
-                saveSettings();
-            }
-        );
-    });
+            );
+        }
+    );
 }
 
 
 function updateSourceUI() {
 
     const source =
-        settings.source || "local";
+        settings.source || "upload";
 
-    const tabs = qsa(
-        "[data-source]"
+
+    const tabs =
+        qsa("[data-source]");
+
+
+    tabs.forEach(
+        (tab) => {
+
+            const active =
+                tab.dataset.source === source;
+
+            tab.classList.toggle(
+                "active",
+                active
+            );
+
+            tab.setAttribute(
+                "aria-selected",
+                active
+                    ? "true"
+                    : "false"
+            );
+        }
     );
 
-    tabs.forEach((tab) => {
 
-        const active =
-            tab.dataset.source === source;
-
-        tab.classList.toggle(
-            "active",
-            active
-        );
-
-        tab.setAttribute(
-            "aria-selected",
-            active
-                ? "true"
-                : "false"
-        );
-    });
-
-    const localPanel =
-        $("localUploadPanel");
+    const uploadPanel =
+        $("uploadPanel");
 
     const tiktokPanel =
         $("tiktokPanel");
@@ -351,13 +382,14 @@ function updateSourceUI() {
         $("rednotePanel");
 
 
-    if (localPanel) {
+    if (uploadPanel) {
 
-        localPanel.classList.toggle(
+        uploadPanel.classList.toggle(
             "hidden",
-            source !== "local"
+            source !== "upload"
         );
     }
+
 
     if (tiktokPanel) {
 
@@ -366,6 +398,7 @@ function updateSourceUI() {
             source !== "tiktok"
         );
     }
+
 
     if (rednotePanel) {
 
@@ -390,6 +423,7 @@ function setupUpload() {
         return;
     }
 
+
     fileInput.addEventListener(
         "change",
         async (event) => {
@@ -397,16 +431,26 @@ function setupUpload() {
             const files =
                 event.target.files;
 
-            if (!files || !files.length) {
 
-                selectedVideoFile = null;
+            if (
+                !files ||
+                !files.length
+            ) {
+
+                selectedVideoFile =
+                    null;
 
                 clearVideoMetadata();
+
+                updateGenerateButton();
 
                 return;
             }
 
-            const file = files[0];
+
+            const file =
+                files[0];
+
 
             if (!isSupportedVideo(file)) {
 
@@ -416,17 +460,33 @@ function setupUpload() {
 
                 fileInput.value = "";
 
+                selectedVideoFile =
+                    null;
+
+                clearVideoMetadata();
+
+                updateGenerateButton();
+
                 return;
             }
 
-            selectedVideoFile = file;
+
+            selectedVideoFile =
+                file;
+
 
             showUploadMessage(
                 "Video selected successfully.",
                 true
             );
 
-            await readVideoMetadata(file);
+
+            await readVideoMetadata(
+                file
+            );
+
+
+            updateGenerateButton();
         }
     );
 }
@@ -439,6 +499,7 @@ function setupUpload() {
 function isSupportedVideo(file) {
 
     const allowedTypes = [
+
         "video/mp4",
         "video/quicktime",
         "video/x-msvideo",
@@ -446,7 +507,9 @@ function isSupportedVideo(file) {
         "video/webm"
     ];
 
+
     const allowedExtensions = [
+
         ".mp4",
         ".mov",
         ".avi",
@@ -454,8 +517,11 @@ function isSupportedVideo(file) {
         ".webm"
     ];
 
+
     const name =
-        (file.name || "").toLowerCase();
+        (file.name || "")
+            .toLowerCase();
+
 
     const extension =
         name.includes(".")
@@ -463,6 +529,7 @@ function isSupportedVideo(file) {
                 name.lastIndexOf(".")
             )
             : "";
+
 
     return (
         allowedTypes.includes(file.type) ||
@@ -481,86 +548,118 @@ async function readVideoMetadata(file) {
         (resolve) => {
 
             const video =
-                document.createElement("video");
+                document.createElement(
+                    "video"
+                );
+
 
             const objectUrl =
-                URL.createObjectURL(file);
-
-            video.preload = "metadata";
-
-            video.src = objectUrl;
-
-            video.onloadedmetadata = () => {
-
-                const width =
-                    video.videoWidth || 0;
-
-                const height =
-                    video.videoHeight || 0;
-
-                const duration =
-                    Number(video.duration) || 0;
+                URL.createObjectURL(
+                    file
+                );
 
 
-                videoMetadata = {
+            video.preload =
+                "metadata";
 
-                    name: file.name,
+            video.src =
+                objectUrl;
 
-                    size: file.size,
 
-                    duration: duration,
+            video.onloadedmetadata =
+                () => {
 
-                    width: width,
+                    const width =
+                        video.videoWidth || 0;
 
-                    height: height,
+                    const height =
+                        video.videoHeight || 0;
 
-                    fps: 0,
+                    const duration =
+                        Number(
+                            video.duration
+                        ) || 0;
 
-                    format: getFileExtension(
-                        file.name
-                    )
+
+                    videoMetadata = {
+
+                        name:
+                            file.name,
+
+                        size:
+                            file.size,
+
+                        duration:
+                            duration,
+
+                        width:
+                            width,
+
+                        height:
+                            height,
+
+                        fps:
+                            0,
+
+                        format:
+                            getFileExtension(
+                                file.name
+                            )
+                    };
+
+
+                    updateVideoInfo();
+
+
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
+
+
+                    resolve();
                 };
 
 
-                updateVideoInfo();
+            video.onerror =
+                () => {
 
-                URL.revokeObjectURL(
-                    objectUrl
-                );
+                    videoMetadata = {
 
-                resolve();
-            };
+                        name:
+                            file.name,
+
+                        size:
+                            file.size,
+
+                        duration:
+                            0,
+
+                        width:
+                            0,
+
+                        height:
+                            0,
+
+                        fps:
+                            0,
+
+                        format:
+                            getFileExtension(
+                                file.name
+                            )
+                    };
 
 
-            video.onerror = () => {
+                    updateVideoInfo();
 
-                videoMetadata = {
 
-                    name: file.name,
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
 
-                    size: file.size,
 
-                    duration: 0,
-
-                    width: 0,
-
-                    height: 0,
-
-                    fps: 0,
-
-                    format: getFileExtension(
-                        file.name
-                    )
+                    resolve();
                 };
-
-                updateVideoInfo();
-
-                URL.revokeObjectURL(
-                    objectUrl
-                );
-
-                resolve();
-            };
         }
     );
 }
@@ -579,8 +678,11 @@ function updateVideoInfo() {
         return;
     }
 
+
     const hasVideo =
-        Boolean(selectedVideoFile);
+        Boolean(
+            selectedVideoFile
+        );
 
 
     card.classList.toggle(
@@ -599,12 +701,14 @@ function updateVideoInfo() {
         videoMetadata.name || "—"
     );
 
+
     setText(
         "videoSize",
         formatFileSize(
             videoMetadata.size
         )
     );
+
 
     setText(
         "videoDuration",
@@ -613,25 +717,37 @@ function updateVideoInfo() {
         )
     );
 
+
     setText(
         "videoResolution",
+
         videoMetadata.width &&
         videoMetadata.height
+
             ? `${videoMetadata.width} × ${videoMetadata.height}`
+
             : "—"
     );
 
+
     setText(
         "videoFps",
+
         videoMetadata.fps
+
             ? `${videoMetadata.fps.toFixed(2)} FPS`
+
             : "Detecting on server"
     );
 
+
     setText(
         "videoFormat",
+
         videoMetadata.format
+
             ? videoMetadata.format.toUpperCase()
+
             : "—"
     );
 }
@@ -640,6 +756,7 @@ function updateVideoInfo() {
 function clearVideoMetadata() {
 
     videoMetadata = {
+
         name: "",
         size: 0,
         duration: 0,
@@ -648,6 +765,7 @@ function clearVideoMetadata() {
         fps: 0,
         format: ""
     };
+
 
     updateVideoInfo();
 }
@@ -663,6 +781,7 @@ function formatFileSize(bytes) {
         return "0 B";
     }
 
+
     const units = [
         "B",
         "KB",
@@ -670,9 +789,13 @@ function formatFileSize(bytes) {
         "GB"
     ];
 
-    let size = bytes;
 
-    let index = 0;
+    let size =
+        bytes;
+
+    let index =
+        0;
+
 
     while (
         size >= 1024 &&
@@ -684,8 +807,11 @@ function formatFileSize(bytes) {
         index++;
     }
 
+
     return `${size.toFixed(
-        index === 0 ? 0 : 2
+        index === 0
+            ? 0
+            : 2
     )} ${units[index]}`;
 }
 
@@ -700,19 +826,28 @@ function formatDuration(seconds) {
         !seconds ||
         !Number.isFinite(seconds)
     ) {
+
         return "—";
     }
 
+
     const total =
-        Math.round(seconds);
+        Math.round(
+            seconds
+        );
+
 
     const hours =
-        Math.floor(total / 3600);
+        Math.floor(
+            total / 3600
+        );
+
 
     const minutes =
         Math.floor(
             (total % 3600) / 60
         );
+
 
     const secs =
         total % 60;
@@ -722,15 +857,21 @@ function formatDuration(seconds) {
 
         return (
             `${hours}:` +
-            `${String(minutes).padStart(2, "0")}:` +
-            `${String(secs).padStart(2, "0")}`
+            `${String(
+                minutes
+            ).padStart(2, "0")}:` +
+            `${String(
+                secs
+            ).padStart(2, "0")}`
         );
     }
 
 
     return (
         `${minutes}:` +
-        `${String(secs).padStart(2, "0")}`
+        `${String(
+            secs
+        ).padStart(2, "0")}`
     );
 }
 
@@ -745,12 +886,15 @@ function getFileExtension(name) {
         return "";
     }
 
+
     const index =
         name.lastIndexOf(".");
+
 
     if (index === -1) {
         return "";
     }
+
 
     return name.substring(
         index + 1
@@ -770,17 +914,21 @@ function showUploadMessage(
     const element =
         $("uploadMessage");
 
+
     if (!element) {
         return;
     }
 
+
     element.textContent =
         message;
+
 
     element.classList.toggle(
         "success",
         success
     );
+
 
     element.classList.remove(
         "hidden"
@@ -796,19 +944,26 @@ function setupSettings() {
 
     const selectMappings = {
 
-        videoRatio: "videoRatio",
+        videoRatio:
+            "videoRatio",
 
-        voice: "voice",
+        voice:
+            "voice",
 
-        voiceSpeed: "voiceSpeed",
+        voiceSpeed:
+            "voiceSpeed",
 
-        freezeZoom: "freezeZoom",
+        freezeZoom:
+            "freezeZoom",
 
-        subtitleFont: "subtitleFont",
+        subtitleFont:
+            "subtitleFont",
 
-        logoPosition: "logoPosition",
+        logoPosition:
+            "logoPosition",
 
-        splitMode: "splitMode"
+        splitMode:
+            "splitMode"
     };
 
 
@@ -820,9 +975,11 @@ function setupSettings() {
             const element =
                 $(elementId);
 
+
             if (!element) {
                 return;
             }
+
 
             element.addEventListener(
                 "change",
@@ -830,6 +987,7 @@ function setupSettings() {
 
                     settings[stateKey] =
                         element.value;
+
 
                     saveSettings();
 
@@ -871,11 +1029,13 @@ function setupRangeInputs() {
                         freezeInterval.value
                     );
 
+
                 updateRangeValue(
                     "freezeInterval",
                     "freezeIntervalValue",
                     `${freezeInterval.value}s`
                 );
+
 
                 saveSettings();
             }
@@ -894,11 +1054,13 @@ function setupRangeInputs() {
                         freezeDuration.value
                     );
 
+
                 updateRangeValue(
                     "freezeDuration",
                     "freezeDurationValue",
                     `${freezeDuration.value}s`
                 );
+
 
                 saveSettings();
             }
@@ -917,13 +1079,16 @@ function setupRangeInputs() {
                         subtitleSize.value
                     );
 
+
                 updateRangeValue(
                     "subtitleSize",
                     "subtitleSizeValue",
                     `${subtitleSize.value}px`
                 );
 
+
                 updateSubtitlePreview();
+
 
                 saveSettings();
             }
@@ -942,11 +1107,14 @@ function setupRangeInputs() {
                         manualSplitLength.value
                     );
 
+
                 saveSettings();
             }
         );
     }
 }
+
+
 /* =========================================================
    CUSTOM FONT UPLOAD
    ========================================================= */
@@ -994,7 +1162,9 @@ function setupCustomFont() {
             settings.subtitleFont =
                 fontSelect.value;
 
+
             saveSettings();
+
 
             updateCustomFontUI();
         }
@@ -1010,6 +1180,7 @@ function setupCustomFont() {
                 const file =
                     fontFile.files[0];
 
+
                 if (!file) {
                     return;
                 }
@@ -1020,15 +1191,22 @@ function setupCustomFont() {
 
 
                 if (
-                    !fileName.endsWith(".ttf") &&
-                    !fileName.endsWith(".otf")
+                    !fileName.endsWith(
+                        ".ttf"
+                    ) &&
+                    !fileName.endsWith(
+                        ".otf"
+                    )
                 ) {
 
                     alert(
                         "Please select a .ttf or .otf font file."
                     );
 
-                    fontFile.value = "";
+
+                    fontFile.value =
+                        "";
+
 
                     return;
                 }
@@ -1053,6 +1231,7 @@ function setupCustomFont() {
     updateCustomFontUI();
 }
 
+
 /* =========================================================
    RANGE VALUE HELPER
    ========================================================= */
@@ -1069,12 +1248,16 @@ function updateRangeValue(
     const value =
         $(valueId);
 
+
     if (input) {
+
         input.value =
             input.value;
     }
 
+
     if (value) {
+
         value.textContent =
             text;
     }
@@ -1122,9 +1305,11 @@ function setupToggleInputs() {
             const element =
                 $(elementId);
 
+
             if (!element) {
                 return;
             }
+
 
             element.addEventListener(
                 "change",
@@ -1135,7 +1320,9 @@ function setupToggleInputs() {
                             element.checked
                         );
 
+
                     saveSettings();
+
 
                     updateAllUI();
                 }
@@ -1154,9 +1341,11 @@ function setupSplitMode() {
     const splitMode =
         $("splitMode");
 
+
     if (!splitMode) {
         return;
     }
+
 
     splitMode.addEventListener(
         "change",
@@ -1165,7 +1354,9 @@ function setupSplitMode() {
             settings.splitMode =
                 splitMode.value;
 
+
             saveSettings();
+
 
             updateSplitUI();
         }
@@ -1178,12 +1369,15 @@ function updateSplitUI() {
     const manualSettings =
         $("manualSplitSettings");
 
+
     if (!manualSettings) {
         return;
     }
 
+
     const isManual =
         settings.splitMode === "manual";
+
 
     manualSettings.classList.toggle(
         "hidden",
@@ -1213,20 +1407,37 @@ function updateFreezeUI() {
     const zoom =
         $("freezeZoom");
 
+    const freezeSettings =
+        $("freezeSettings");
+
 
     if (interval) {
+
         interval.disabled =
             !enabled;
     }
 
+
     if (duration) {
+
         duration.disabled =
             !enabled;
     }
 
+
     if (zoom) {
+
         zoom.disabled =
             !enabled;
+    }
+
+
+    if (freezeSettings) {
+
+        freezeSettings.classList.toggle(
+            "hidden",
+            !enabled
+        );
     }
 }
 
@@ -1239,6 +1450,7 @@ function updateBlurUI() {
 
     const editor =
         $("blurEditor");
+
 
     const enabled =
         Boolean(
@@ -1265,6 +1477,7 @@ function updateLogoUI() {
     const logoSettings =
         $("logoSettings");
 
+
     const enabled =
         Boolean(
             settings.logoEnabled
@@ -1282,7 +1495,7 @@ function updateLogoUI() {
 
 
 /* =========================================================
-   LOGO FILE
+   LOGO FILE / ADJUST BUTTON
    ========================================================= */
 
 function setupLogoButton() {
@@ -1290,9 +1503,11 @@ function setupLogoButton() {
     const button =
         $("logoAdjustButton");
 
+
     if (!button) {
         return;
     }
+
 
     button.addEventListener(
         "click",
@@ -1301,13 +1516,18 @@ function setupLogoButton() {
             const editor =
                 $("logoSettings");
 
+
             if (!editor) {
                 return;
             }
 
+
             editor.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
+                behavior:
+                    "smooth",
+
+                block:
+                    "center"
             });
         }
     );
@@ -1320,12 +1540,23 @@ function setupLogoButton() {
 
 function updateSubtitlePreview() {
 
-    const preview =
+    let preview =
         $("subtitlePreview");
+
+
+    if (!preview) {
+
+        preview =
+            qs(
+                ".subtitle-preview-text"
+            );
+    }
+
 
     if (!preview) {
         return;
     }
+
 
     preview.style.fontSize =
         `${settings.subtitleSize}px`;
@@ -1343,30 +1574,36 @@ function applySettingsToUI() {
         settings.videoRatio
     );
 
+
     updateSelect(
         "voice",
         settings.voice
     );
+
 
     updateSelect(
         "voiceSpeed",
         settings.voiceSpeed
     );
 
+
     updateSelect(
         "freezeZoom",
         settings.freezeZoom
     );
+
 
     updateSelect(
         "subtitleFont",
         settings.subtitleFont
     );
 
+
     updateSelect(
         "logoPosition",
         settings.logoPosition
     );
+
 
     updateSelect(
         "splitMode",
@@ -1379,20 +1616,24 @@ function applySettingsToUI() {
         settings.freezeEnabled
     );
 
+
     updateCheckbox(
         "blurEnabled",
         settings.blurEnabled
     );
+
 
     updateCheckbox(
         "logoEnabled",
         settings.logoEnabled
     );
 
+
     updateCheckbox(
         "captionEnabled",
         settings.captionEnabled
     );
+
 
     updateCheckbox(
         "thumbnailEnabled",
@@ -1405,15 +1646,18 @@ function applySettingsToUI() {
         settings.freezeInterval
     );
 
+
     updateRange(
         "freezeDuration",
         settings.freezeDuration
     );
 
+
     updateRange(
         "subtitleSize",
         settings.subtitleSize
     );
+
 
     updateRange(
         "manualSplitLength",
@@ -1434,17 +1678,21 @@ function updateSelect(
     const element =
         $(id);
 
+
     if (!element) {
         return;
     }
+
 
     const option =
         Array.from(
             element.options
         ).find(
             (item) =>
-                item.value === String(value)
+                item.value ===
+                String(value)
         );
+
 
     if (option) {
 
@@ -1466,9 +1714,11 @@ function updateCheckbox(
     const element =
         $(id);
 
+
     if (!element) {
         return;
     }
+
 
     element.checked =
         Boolean(value);
@@ -1487,9 +1737,11 @@ function updateRange(
     const element =
         $(id);
 
+
     if (!element) {
         return;
     }
+
 
     element.value =
         String(value);
@@ -1580,36 +1832,45 @@ function setupGenerateButton() {
     const button =
         $("generateButton");
 
+
     if (!button) {
         return;
     }
+
 
     button.addEventListener(
         "click",
         () => {
 
-            if (!validateBeforeGenerate()) {
+            if (
+                !validateBeforeGenerate()
+            ) {
+
                 return;
             }
+
 
             /*
              * STEP 3:
              * Frontend only.
              *
              * STEP 6/7:
-             * This will be replaced with:
+             * Replace with:
              *
              * POST /api/jobs
              *
-             * and then job polling.
+             * followed by job polling.
              */
 
+
             showProcessingView();
+
 
             console.log(
                 "Golden Recap MM settings:",
                 settings
             );
+
 
             console.log(
                 "Selected video:",
@@ -1626,8 +1887,16 @@ function setupGenerateButton() {
 
 function validateBeforeGenerate() {
 
+    const source =
+        settings.source;
+
+
+    /* -----------------------------------------------------
+       LOCAL UPLOAD
+       ----------------------------------------------------- */
+
     if (
-        settings.source === "local" &&
+        source === "upload" &&
         !selectedVideoFile
     ) {
 
@@ -1635,16 +1904,22 @@ function validateBeforeGenerate() {
             "Please select a video first."
         );
 
+
         return false;
     }
 
 
+    /* -----------------------------------------------------
+       TIKTOK
+       ----------------------------------------------------- */
+
     if (
-        settings.source === "tiktok"
+        source === "tiktok"
     ) {
 
         const input =
             $("tiktokUrl");
+
 
         if (
             !input ||
@@ -1655,17 +1930,23 @@ function validateBeforeGenerate() {
                 "Please enter a TikTok video link."
             );
 
+
             return false;
         }
     }
 
 
+    /* -----------------------------------------------------
+       REDNOTE
+       ----------------------------------------------------- */
+
     if (
-        settings.source === "rednote"
+        source === "rednote"
     ) {
 
         const input =
             $("rednoteUrl");
+
 
         if (
             !input ||
@@ -1675,6 +1956,7 @@ function validateBeforeGenerate() {
             showError(
                 "Please enter a RedNote video link."
             );
+
 
             return false;
         }
@@ -1694,23 +1976,29 @@ function showError(message) {
     const existing =
         $("appError");
 
+
     if (existing) {
 
         existing.textContent =
             message;
 
+
         existing.classList.remove(
             "hidden"
         );
 
+
         setTimeout(
             () => {
+
                 existing.classList.add(
                     "hidden"
                 );
+
             },
             4000
         );
+
 
         return;
     }
@@ -1803,16 +2091,22 @@ function updateProgress(
     if (circle) {
 
         const circumference =
-            2 * Math.PI * 52;
+            2 *
+            Math.PI *
+            52;
+
 
         const offset =
             circumference -
             (
                 percent / 100
-            ) * circumference;
+            ) *
+            circumference;
+
 
         circle.style.strokeDasharray =
             circumference;
+
 
         circle.style.strokeDashoffset =
             offset;
@@ -1829,9 +2123,11 @@ function setupCancelButton() {
     const button =
         $("cancelButton");
 
+
     if (!button) {
         return;
     }
+
 
     button.addEventListener(
         "click",
@@ -1843,8 +2139,9 @@ function setupCancelButton() {
              *
              * POST /api/jobs/{job_id}/cancel
              *
-             * For now only restore the UI.
+             * For now restore the frontend UI.
              */
+
 
             restoreMainView();
         }
@@ -1890,6 +2187,9 @@ function restoreMainView() {
             "hidden"
         );
     }
+
+
+    updateAllUI();
 }
 
 
@@ -1902,9 +2202,11 @@ function setupNewRecapButton() {
     const button =
         $("newRecapButton");
 
+
     if (!button) {
         return;
     }
+
 
     button.addEventListener(
         "click",
@@ -1918,20 +2220,27 @@ function setupNewRecapButton() {
 
 function resetForNewRecap() {
 
-    selectedVideoFile = null;
+    selectedVideoFile =
+        null;
+
 
     clearVideoMetadata();
+
 
     const fileInput =
         $("videoFile");
 
+
     if (fileInput) {
-        fileInput.value = "";
+
+        fileInput.value =
+            "";
     }
 
 
     const resultView =
         $("resultView");
+
 
     if (resultView) {
 
@@ -1943,9 +2252,13 @@ function resetForNewRecap() {
 
     restoreMainView();
 
+
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:
+            0,
+
+        behavior:
+            "smooth"
     });
 }
 
@@ -1958,10 +2271,13 @@ function setupBackendStatus() {
 
     /*
      * STEP 6:
-     * Replace this with real API health check:
+     * Replace this with:
      *
      * GET /health
+     *
+     * For STEP 3 this is only frontend status.
      */
+
 
     const statusText =
         $("backendStatusText");
@@ -1998,9 +2314,11 @@ function setText(
     const element =
         $(id);
 
+
     if (!element) {
         return;
     }
+
 
     element.textContent =
         value;
@@ -2016,17 +2334,65 @@ function updateGenerateButton() {
     const button =
         $("generateButton");
 
+
     if (!button) {
         return;
     }
 
-    const localReady =
-        settings.source !== "local" ||
-        Boolean(selectedVideoFile);
+
+    const source =
+        settings.source;
+
+
+    let ready =
+        false;
+
+
+    if (
+        source === "upload"
+    ) {
+
+        ready =
+            Boolean(
+                selectedVideoFile
+            );
+    }
+
+
+    else if (
+        source === "tiktok"
+    ) {
+
+        const input =
+            $("tiktokUrl");
+
+
+        ready =
+            Boolean(
+                input &&
+                input.value.trim()
+            );
+    }
+
+
+    else if (
+        source === "rednote"
+    ) {
+
+        const input =
+            $("rednoteUrl");
+
+
+        ready =
+            Boolean(
+                input &&
+                input.value.trim()
+            );
+    }
 
 
     button.disabled =
-        !localReady;
+        !ready;
 }
 
 
@@ -2068,7 +2434,62 @@ function setupUrlInputs() {
 }
 
 
-setupUrlInputs();
+/* =========================================================
+   CLEAR BUTTONS
+   ========================================================= */
+
+function setupClearButtons() {
+
+    const clearButtons =
+        qsa("[data-clear]");
+
+
+    clearButtons.forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const targetId =
+                        button.dataset.clear;
+
+
+                    if (!targetId) {
+                        return;
+                    }
+
+
+                    const target =
+                        $(targetId);
+
+
+                    if (!target) {
+                        return;
+                    }
+
+
+                    target.value =
+                        "";
+
+
+                    target.dispatchEvent(
+                        new Event(
+                            "input",
+                            {
+                                bubbles:
+                                    true
+                            }
+                        )
+                    );
+
+
+                    updateGenerateButton();
+                }
+            );
+        }
+    );
+}
 
 
 /* =========================================================
@@ -2080,21 +2501,25 @@ document.addEventListener(
     (event) => {
 
         if (
-            event.key === "Escape"
+            event.key !== "Escape"
         ) {
 
-            const processingView =
-                $("processingView");
+            return;
+        }
 
-            if (
-                processingView &&
-                !processingView.classList.contains(
-                    "hidden"
-                )
-            ) {
 
-                restoreMainView();
-            }
+        const processingView =
+            $("processingView");
+
+
+        if (
+            processingView &&
+            !processingView.classList.contains(
+                "hidden"
+            )
+        ) {
+
+            restoreMainView();
         }
     }
 );
@@ -2107,22 +2532,29 @@ document.addEventListener(
 window.GoldenRecapMM = {
 
     getSettings() {
+
         return {
             ...settings
         };
     },
 
+
     getVideo() {
+
         return selectedVideoFile;
     },
 
+
     getMetadata() {
+
         return {
             ...videoMetadata
         };
     },
 
+
     saveSettings,
+
 
     resetSettings() {
 
@@ -2130,9 +2562,12 @@ window.GoldenRecapMM = {
             ...defaultSettings
         };
 
+
         saveSettings();
 
+
         applySettingsToUI();
+
 
         updateAllUI();
     }
