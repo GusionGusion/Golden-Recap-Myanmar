@@ -1121,32 +1121,21 @@ function setupRangeInputs() {
 
 function setupCustomFont() {
 
-    const fontSelect =
-        $("subtitleFont");
-
-    const fontSettings =
-        $("customFontSettings");
-
-    const fontFile =
-        $("customFontFile");
-
-    const fontName =
-        $("customFontName");
-
+    const fontSelect = $("subtitleFont");
+    const fontSettings = $("customFontSettings");
+    const fontFile = $("customFontFile");
+    const fontName = $("customFontName");
 
     if (!fontSelect) {
         return;
     }
-
 
     function updateCustomFontUI() {
 
         const isCustom =
             fontSelect.value === "custom";
 
-
         if (fontSettings) {
-
             fontSettings.classList.toggle(
                 "hidden",
                 !isCustom
@@ -1155,6 +1144,10 @@ function setupCustomFont() {
     }
 
 
+    /* -----------------------------------------------------
+       FONT SELECT
+       ----------------------------------------------------- */
+
     fontSelect.addEventListener(
         "change",
         () => {
@@ -1162,14 +1155,40 @@ function setupCustomFont() {
             settings.subtitleFont =
                 fontSelect.value;
 
-
             saveSettings();
-
 
             updateCustomFontUI();
         }
     );
 
+
+    /* -----------------------------------------------------
+       UPLOAD BUTTON
+       ----------------------------------------------------- */
+
+    const uploadButton =
+        qs(".custom-font-upload");
+
+    if (
+        uploadButton &&
+        fontFile
+    ) {
+
+        uploadButton.addEventListener(
+            "click",
+            (event) => {
+
+                event.preventDefault();
+
+                fontFile.click();
+            }
+        );
+    }
+
+
+    /* -----------------------------------------------------
+       FONT FILE
+       ----------------------------------------------------- */
 
     if (fontFile) {
 
@@ -1178,8 +1197,8 @@ function setupCustomFont() {
             () => {
 
                 const file =
+                    fontFile.files &&
                     fontFile.files[0];
-
 
                 if (!file) {
                     return;
@@ -1190,23 +1209,23 @@ function setupCustomFont() {
                     file.name.toLowerCase();
 
 
-                if (
-                    !fileName.endsWith(
-                        ".ttf"
-                    ) &&
-                    !fileName.endsWith(
-                        ".otf"
-                    )
-                ) {
+                const validFont =
+                    fileName.endsWith(".ttf") ||
+                    fileName.endsWith(".otf");
+
+
+                if (!validFont) {
 
                     alert(
                         "Please select a .ttf or .otf font file."
                     );
 
+                    fontFile.value = "";
 
-                    fontFile.value =
-                        "";
-
+                    if (fontName) {
+                        fontName.textContent =
+                            "No font selected";
+                    }
 
                     return;
                 }
@@ -1219,6 +1238,14 @@ function setupCustomFont() {
                 }
 
 
+                /* Keep the selected font in frontend state */
+
+                settings.subtitleFont =
+                    "custom";
+
+                saveSettings();
+
+
                 console.log(
                     "Custom font selected:",
                     file.name
@@ -1228,8 +1255,13 @@ function setupCustomFont() {
     }
 
 
+    /* -----------------------------------------------------
+       INITIAL UI
+       ----------------------------------------------------- */
+
     updateCustomFontUI();
 }
+
 
 
 /* =========================================================
