@@ -178,6 +178,8 @@ document.addEventListener(
         setupBackendStatus();
 
         updateAllUI();
+        
+        setupCustomFont();
 
     }
 );
@@ -945,7 +947,111 @@ function setupRangeInputs() {
         );
     }
 }
+/* =========================================================
+   CUSTOM FONT UPLOAD
+   ========================================================= */
 
+function setupCustomFont() {
+
+    const fontSelect =
+        $("subtitleFont");
+
+    const fontSettings =
+        $("customFontSettings");
+
+    const fontFile =
+        $("customFontFile");
+
+    const fontName =
+        $("customFontName");
+
+
+    if (!fontSelect) {
+        return;
+    }
+
+
+    function updateCustomFontUI() {
+
+        const isCustom =
+            fontSelect.value === "custom";
+
+
+        if (fontSettings) {
+
+            fontSettings.classList.toggle(
+                "hidden",
+                !isCustom
+            );
+        }
+    }
+
+
+    fontSelect.addEventListener(
+        "change",
+        () => {
+
+            settings.subtitleFont =
+                fontSelect.value;
+
+            saveSettings();
+
+            updateCustomFontUI();
+        }
+    );
+
+
+    if (fontFile) {
+
+        fontFile.addEventListener(
+            "change",
+            () => {
+
+                const file =
+                    fontFile.files[0];
+
+                if (!file) {
+                    return;
+                }
+
+
+                const fileName =
+                    file.name.toLowerCase();
+
+
+                if (
+                    !fileName.endsWith(".ttf") &&
+                    !fileName.endsWith(".otf")
+                ) {
+
+                    alert(
+                        "Please select a .ttf or .otf font file."
+                    );
+
+                    fontFile.value = "";
+
+                    return;
+                }
+
+
+                if (fontName) {
+
+                    fontName.textContent =
+                        file.name;
+                }
+
+
+                console.log(
+                    "Custom font selected:",
+                    file.name
+                );
+            }
+        );
+    }
+
+
+    updateCustomFontUI();
+}
 
 /* =========================================================
    RANGE VALUE HELPER
