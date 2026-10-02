@@ -2500,6 +2500,248 @@ function restoreMainView() {
     updateAllUI();
 }
 
+/* =========================================================
+   RESULT VIEW
+   ========================================================= */
+
+function showResultView(result) {
+
+    const processingView =
+        $("processingView");
+
+    const resultView =
+        $("resultView");
+
+    const resultVideoContainer =
+        $("resultVideoContainer");
+
+    const resultParts =
+        $("resultParts");
+
+    if (processingView) {
+
+        processingView.classList.add(
+            "hidden"
+        );
+    }
+
+    if (resultView) {
+
+        resultView.classList.remove(
+            "hidden"
+        );
+    }
+
+    /*
+     * Temporary backend currently returns:
+     *
+     * {
+     *     video_url: null,
+     *     download_url: null
+     * }
+     *
+     * So show a ready message until the
+     * real video pipeline returns URLs.
+     */
+
+    if (resultVideoContainer) {
+
+        if (
+            result &&
+            result.video_url
+        ) {
+
+            resultVideoContainer.innerHTML = `
+                <video
+                    controls
+                    playsinline
+                    preload="metadata"
+                    style="
+                        width:100%;
+                        max-width:720px;
+                        border-radius:16px;
+                        display:block;
+                        margin:0 auto;
+                    "
+                >
+                    <source
+                        src="${result.video_url}"
+                        type="video/mp4"
+                    >
+                    Your browser does not support video playback.
+                </video>
+            `;
+
+        } else {
+
+            resultVideoContainer.innerHTML = `
+                <div
+                    style="
+                        padding:24px;
+                        text-align:center;
+                        border:1px solid rgba(217,173,85,0.18);
+                        border-radius:16px;
+                        background:rgba(217,173,85,0.05);
+                    "
+                >
+                    <div
+                        style="
+                            font-size:32px;
+                            margin-bottom:10px;
+                        "
+                    >
+                        ✅
+                    </div>
+
+                    <strong>
+                        Final Video Ready
+                    </strong>
+
+                    <p
+                        style="
+                            margin-top:8px;
+                            opacity:0.7;
+                            font-size:13px;
+                        "
+                    >
+                        The processing test completed successfully.
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    /*
+     * Result parts
+     */
+
+    if (resultParts) {
+
+        resultParts.innerHTML = "";
+
+        if (
+            result &&
+            Array.isArray(result.parts)
+        ) {
+
+            result.parts.forEach(
+                (part, index) => {
+
+                    const partUrl =
+                        part.video_url ||
+                        part.download_url;
+
+                    if (!partUrl) {
+                        return;
+                    }
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "result-part";
+
+                    item.innerHTML = `
+                        <div>
+                            Video ${index + 1}
+                        </div>
+
+                        <a
+                            href="${partUrl}"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            Open Video
+                        </a>
+                    `;
+
+                    resultParts.appendChild(
+                        item
+                    );
+                }
+            );
+        }
+    }
+
+    /*
+     * Download buttons
+     */
+
+    const downloadVideoButton =
+        $("downloadVideoButton");
+
+    if (downloadVideoButton) {
+
+        if (
+            result &&
+            result.download_url
+        ) {
+
+            downloadVideoButton.href =
+                result.download_url;
+
+            downloadVideoButton.classList.remove(
+                "hidden"
+            );
+
+        } else {
+
+            downloadVideoButton.classList.add(
+                "hidden"
+            );
+        }
+    }
+
+    /*
+     * Thumbnail download
+     */
+
+    const downloadThumbnailButton =
+        $("downloadThumbnailButton");
+
+    if (downloadThumbnailButton) {
+
+        if (
+            result &&
+            result.thumbnail_url
+        ) {
+
+            downloadThumbnailButton.href =
+                result.thumbnail_url;
+
+            downloadThumbnailButton.classList.remove(
+                "hidden"
+            );
+
+        } else {
+
+            downloadThumbnailButton.classList.add(
+                "hidden"
+            );
+        }
+    }
+
+    /*
+     * Caption
+     */
+
+    const copyCaptionButton =
+        $("copyCaptionButton");
+
+    if (copyCaptionButton) {
+
+        copyCaptionButton.dataset.caption =
+            result &&
+            result.caption
+                ? result.caption
+                : "";
+    }
+
+    currentJobId =
+        null;
+}
 
 /* =========================================================
    RESULT / NEW RECAP
