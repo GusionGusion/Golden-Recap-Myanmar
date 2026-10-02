@@ -1864,56 +1864,157 @@ function updateRangeLabels() {
    ========================================================= */
 
 function setupGenerateButton() {
+    const button = $("generateButton");
 
-    const button =
-        $("generateButton");
+    if (!button) return;
 
+    button.addEventListener("click", async () => {
+        if (!validateBeforeGenerate()) return;
 
-    if (!button) {
-        return;
-    }
+        const source = settings.source;
 
+        if (source === "upload" && !selectedVideoFile) {
+            alert("Please select a video first.");
+            return;
+        }
 
-    button.addEventListener(
-        "click",
-        () => {
+        showProcessingView();
+        updateProgress(5, "Uploading Video");
 
-            if (
-                !validateBeforeGenerate()
-            ) {
+        button.disabled = true;
 
-                return;
-            }
-
+        try {
+            const formData = new FormData();
 
             /*
-             * STEP 3:
-             * Frontend only.
+             * Current frontend uses:
+             * upload / tiktok / rednote
              *
-             * STEP 6/7:
-             * Replace with:
-             *
-             * POST /api/jobs
-             *
-             * followed by job polling.
+             * Backend currently expects:
+             * local / tiktok / rednote
              */
+            const backendSource =
+                source === "upload"
+                    ? "local"
+                    : source;
 
-
-            showProcessingView();
-
-
-            console.log(
-                "Golden Recap MM settings:",
-                settings
+            formData.append(
+                "source",
+                backendSource
             );
 
-
-            console.log(
-                "Selected video:",
-                selectedVideoFile
+            formData.append(
+                "settings",
+                JSON.stringify(settings)
             );
+
+            if (source === "upload") {
+                formData.append(
+                    "video",
+                    selectedVideoFile
+                );
+            }
+
+            if (source === "tiktok") {
+                const input = $("tiktokUrl");
+
+                const url = input
+                    ? input.value.trim()
+                    : "";
+
+                if (!url) {
+                    throw new Error(
+                        "Please enter a TikTok video URL."
+                    );
+                }
+
+                formData.append(
+                    "source_url",
+                    url
+                );
+            }
+
+            if (source === "rednote") {
+                const input = $("rednoteUrl");
+
+                const url = input
+                    ? input.value.trim()
+                    : "";
+
+                if (!url) {
+                    throw new Error(
+                        "Please enter a RedNote video URL."
+                    );
+                }
+
+                formData.append(
+                    "source_url",
+                    url
+                );
+            }
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/jobs`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            if (!response.ok) {
+                let errorMessage =
+                    "Could not create the recap job.";
+
+                try {
+                    const errorData =
+                        await response.json();
+
+                    if (errorData.detail) {
+                        errorMessage =
+                            errorData.detail;
+                    }
+                } catch (error) {
+                    // Ignore JSON parsing error.
+                }
+
+                throw new Error(
+                    errorMessage
+                );
+            }
+
+            const job = await response.json();
+
+            currentJobId = job.job_id;
+
+            updateProgress(
+                job.progress ?? 5,
+                job.stage ?? "Uploading Video"
+            );
+
+            startJobPolling(
+                currentJobId
+            );
+
+        } catch (error) {
+            console.error(
+                "Create job failed:",
+                error
+            );
+
+            stopJobPolling();
+
+            currentJobId = null;
+
+            alert(
+                error.message ||
+                "Failed to connect to the backend."
+            );
+
+            restoreMainView();
+        } finally {
+            button.disabled = false;
         }
-    );
+    });
 }
 
 
