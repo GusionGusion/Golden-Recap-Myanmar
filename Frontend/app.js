@@ -2574,14 +2574,11 @@ function showResultView(result) {
         result.caption
             ? result.caption
             : "";
-
     /* ---------------------------------------------------------
        VIDEO PREVIEW
        --------------------------------------------------------- */
 
     if (resultVideoContainer) {
-
-        resultVideoContainer.innerHTML = "";
 
         if (videoUrl) {
 
@@ -2626,16 +2623,6 @@ function showResultView(result) {
                 </div>
             `;
 
-        } else {
-
-            /*
-             * No real video URL yet.
-             * Keep the existing Result View UI.
-             * The real video preview will be inserted
-             * when the backend returns video_url.
-             */
-
-            resultVideoContainer.innerHTML = "";
         }
     }
 
