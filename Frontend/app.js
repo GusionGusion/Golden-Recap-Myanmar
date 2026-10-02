@@ -2499,9 +2499,9 @@ function restoreMainView() {
 
     updateAllUI();
 }
-
 /* =========================================================
    RESULT VIEW
+   FINAL RESULT UI
    ========================================================= */
 
 function showResultView(result) {
@@ -2518,102 +2518,266 @@ function showResultView(result) {
     const resultParts =
         $("resultParts");
 
-    if (processingView) {
+    const downloadVideoButton =
+        $("downloadVideoButton");
 
+    const downloadThumbnailButton =
+        $("downloadThumbnailButton");
+
+    const copyCaptionButton =
+        $("copyCaptionButton");
+
+    /* ---------------------------------------------------------
+       HIDE PROCESSING
+       --------------------------------------------------------- */
+
+    if (processingView) {
         processingView.classList.add(
             "hidden"
         );
     }
 
-    if (resultView) {
+    /* ---------------------------------------------------------
+       SHOW RESULT
+       --------------------------------------------------------- */
 
+    if (resultView) {
         resultView.classList.remove(
             "hidden"
         );
     }
 
-    /*
-     * Temporary backend currently returns:
-     *
-     * {
-     *     video_url: null,
-     *     download_url: null
-     * }
-     *
-     * So show a ready message until the
-     * real video pipeline returns URLs.
-     */
+    /* ---------------------------------------------------------
+       RESULT DATA
+       --------------------------------------------------------- */
+
+    const videoUrl =
+        result &&
+        (
+            result.video_url ||
+            result.download_url
+        )
+            ? (
+                result.video_url ||
+                result.download_url
+            )
+            : "";
+
+    const thumbnailUrl =
+        result &&
+        result.thumbnail_url
+            ? result.thumbnail_url
+            : "";
+
+    const caption =
+        result &&
+        result.caption
+            ? result.caption
+            : "";
+
+    /* ---------------------------------------------------------
+       VIDEO PREVIEW
+       --------------------------------------------------------- */
 
     if (resultVideoContainer) {
 
-        if (
-            result &&
-            result.video_url
-        ) {
+        resultVideoContainer.innerHTML = "";
+
+        if (videoUrl) {
 
             resultVideoContainer.innerHTML = `
-                <video
-                    controls
-                    playsinline
-                    preload="metadata"
+                <div
+                    class="final-video-card"
                     style="
                         width:100%;
                         max-width:720px;
-                        border-radius:16px;
-                        display:block;
                         margin:0 auto;
+                        overflow:hidden;
+                        border-radius:18px;
+                        border:1px solid rgba(217,173,85,0.18);
+                        background:#11151d;
+                        box-shadow:
+                            0 18px 50px
+                            rgba(0,0,0,0.28);
                     "
                 >
-                    <source
-                        src="${result.video_url}"
-                        type="video/mp4"
+
+                    <video
+                        controls
+                        playsinline
+                        preload="metadata"
+                        poster="${thumbnailUrl}"
+                        style="
+                            width:100%;
+                            height:auto;
+                            display:block;
+                            background:#080a0f;
+                        "
                     >
-                    Your browser does not support video playback.
-                </video>
+                        <source
+                            src="${videoUrl}"
+                            type="video/mp4"
+                        >
+
+                        Your browser does not support
+                        video playback.
+                    </video>
+
+                </div>
             `;
 
         } else {
 
+            /*
+             * Temporary backend fallback.
+             * Real video will appear automatically
+             * when video_url is returned.
+             */
+
             resultVideoContainer.innerHTML = `
                 <div
+                    class="final-video-card"
                     style="
-                        padding:24px;
+                        width:100%;
+                        max-width:720px;
+                        margin:0 auto;
+                        padding:34px 20px;
                         text-align:center;
+                        border-radius:18px;
                         border:1px solid rgba(217,173,85,0.18);
-                        border-radius:16px;
-                        background:rgba(217,173,85,0.05);
+                        background:
+                            linear-gradient(
+                                145deg,
+                                rgba(217,173,85,0.07),
+                                rgba(255,255,255,0.02)
+                            );
+                        box-shadow:
+                            0 18px 50px
+                            rgba(0,0,0,0.22);
                     "
                 >
+
                     <div
                         style="
-                            font-size:32px;
-                            margin-bottom:10px;
+                            font-size:36px;
+                            margin-bottom:12px;
                         "
                     >
-                        ✅
+                        🎬
                     </div>
 
-                    <strong>
+                    <strong
+                        style="
+                            display:block;
+                            color:#f2f3f5;
+                            font-size:16px;
+                        "
+                    >
                         Final Video Ready
                     </strong>
 
                     <p
                         style="
-                            margin-top:8px;
-                            opacity:0.7;
-                            font-size:13px;
+                            margin:8px 0 0;
+                            color:#9da4b0;
+                            font-size:12px;
+                            line-height:1.5;
                         "
                     >
-                        The processing test completed successfully.
+                        Your recap has been successfully generated.
                     </p>
+
                 </div>
             `;
         }
     }
 
-    /*
-     * Result parts
-     */
+    /* ---------------------------------------------------------
+       VIDEO DOWNLOAD
+       --------------------------------------------------------- */
+
+    if (downloadVideoButton) {
+
+        if (videoUrl) {
+
+            downloadVideoButton.href =
+                videoUrl;
+
+            downloadVideoButton.download =
+                "golden-recap-mm.mp4";
+
+            downloadVideoButton.classList.remove(
+                "hidden"
+            );
+
+            downloadVideoButton.removeAttribute(
+                "aria-hidden"
+            );
+
+        } else {
+
+            downloadVideoButton.classList.add(
+                "hidden"
+            );
+        }
+    }
+
+    /* ---------------------------------------------------------
+       THUMBNAIL DOWNLOAD
+       --------------------------------------------------------- */
+
+    if (downloadThumbnailButton) {
+
+        if (thumbnailUrl) {
+
+            downloadThumbnailButton.href =
+                thumbnailUrl;
+
+            downloadThumbnailButton.download =
+                "golden-recap-thumbnail.jpg";
+
+            downloadThumbnailButton.classList.remove(
+                "hidden"
+            );
+
+            downloadThumbnailButton.removeAttribute(
+                "aria-hidden"
+            );
+
+        } else {
+
+            downloadThumbnailButton.classList.add(
+                "hidden"
+            );
+        }
+    }
+
+    /* ---------------------------------------------------------
+       CAPTION
+       --------------------------------------------------------- */
+
+    if (copyCaptionButton) {
+
+        copyCaptionButton.dataset.caption =
+            caption;
+
+        if (caption) {
+
+            copyCaptionButton.classList.remove(
+                "hidden"
+            );
+
+        } else {
+
+            copyCaptionButton.classList.add(
+                "hidden"
+            );
+        }
+    }
+
+    /* ---------------------------------------------------------
+       RESULT PARTS / SPLIT VIDEOS
+       --------------------------------------------------------- */
 
     if (resultParts) {
 
@@ -2621,7 +2785,8 @@ function showResultView(result) {
 
         if (
             result &&
-            Array.isArray(result.parts)
+            Array.isArray(result.parts) &&
+            result.parts.length > 0
         ) {
 
             result.parts.forEach(
@@ -2644,17 +2809,46 @@ function showResultView(result) {
                         "result-part";
 
                     item.innerHTML = `
-                        <div>
-                            Video ${index + 1}
-                        </div>
-
-                        <a
-                            href="${partUrl}"
-                            target="_blank"
-                            rel="noopener"
+                        <div
+                            style="
+                                display:flex;
+                                align-items:center;
+                                justify-content:space-between;
+                                gap:12px;
+                                padding:12px 14px;
+                                border-radius:12px;
+                                border:1px solid
+                                    rgba(255,255,255,0.06);
+                                background:
+                                    rgba(255,255,255,0.025);
+                            "
                         >
-                            Open Video
-                        </a>
+
+                            <span
+                                style="
+                                    color:#e8eaf0;
+                                    font-size:12px;
+                                    font-weight:600;
+                                "
+                            >
+                                Video ${index + 1}
+                            </span>
+
+                            <a
+                                href="${partUrl}"
+                                target="_blank"
+                                rel="noopener"
+                                style="
+                                    color:#e0b85f;
+                                    font-size:11px;
+                                    font-weight:700;
+                                    text-decoration:none;
+                                "
+                            >
+                                Open Video
+                            </a>
+
+                        </div>
                     `;
 
                     resultParts.appendChild(
@@ -2665,82 +2859,24 @@ function showResultView(result) {
         }
     }
 
-    /*
-     * Download buttons
-     */
+    /* ---------------------------------------------------------
+       FINAL STATE
+       --------------------------------------------------------- */
 
-    const downloadVideoButton =
-        $("downloadVideoButton");
-
-    if (downloadVideoButton) {
-
-        if (
-            result &&
-            result.download_url
-        ) {
-
-            downloadVideoButton.href =
-                result.download_url;
-
-            downloadVideoButton.classList.remove(
-                "hidden"
-            );
-
-        } else {
-
-            downloadVideoButton.classList.add(
-                "hidden"
-            );
-        }
-    }
+    currentJobId = null;
 
     /*
-     * Thumbnail download
+     * Keep result view visible.
+     * The real backend will provide:
+     *
+     * video_url
+     * download_url
+     * thumbnail_url
+     * caption
+     * parts
+     *
+     * and this UI will automatically use them.
      */
-
-    const downloadThumbnailButton =
-        $("downloadThumbnailButton");
-
-    if (downloadThumbnailButton) {
-
-        if (
-            result &&
-            result.thumbnail_url
-        ) {
-
-            downloadThumbnailButton.href =
-                result.thumbnail_url;
-
-            downloadThumbnailButton.classList.remove(
-                "hidden"
-            );
-
-        } else {
-
-            downloadThumbnailButton.classList.add(
-                "hidden"
-            );
-        }
-    }
-
-    /*
-     * Caption
-     */
-
-    const copyCaptionButton =
-        $("copyCaptionButton");
-
-    if (copyCaptionButton) {
-
-        copyCaptionButton.dataset.caption =
-            result &&
-            result.caption
-                ? result.caption
-                : "";
-    }
-
-    currentJobId =
-        null;
 }
 
 /* =========================================================
