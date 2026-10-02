@@ -2626,7 +2626,7 @@ function showResultView(result) {
                 </div>
             `;
 
-                } else {
+        } else {
 
             /*
              * No real video URL yet.
@@ -2637,11 +2637,11 @@ function showResultView(result) {
 
             resultVideoContainer.innerHTML = "";
         }
+    }
 
     /* ---------------------------------------------------------
        VIDEO DOWNLOAD
        --------------------------------------------------------- */
-
     if (downloadVideoButton) {
 
         if (videoUrl) {
