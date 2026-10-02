@@ -2389,36 +2389,81 @@ function updateProgress(percent, stage) {
    CANCEL
    ========================================================= */
 
+/* =========================================================
+   CANCEL JOB
+   ========================================================= */
+
 function setupCancelButton() {
-
-    const button =
-        $("cancelButton");
-
+    const button = $("cancelButton");
 
     if (!button) {
         return;
     }
 
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            /*
-             * STEP 20:
-             * This will call:
-             *
-             * POST /api/jobs/{job_id}/cancel
-             *
-             * For now restore the frontend UI.
-             */
-
-
+    button.addEventListener("click", async () => {
+        if (!currentJobId) {
             restoreMainView();
+            return;
         }
-    );
-}
 
+        const jobId = currentJobId;
+
+        button.disabled = true;
+        button.textContent = "Cancelling...";
+
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/api/jobs/${jobId}/cancel`,
+                {
+                    method: "POST"
+                }
+            );
+
+            if (!response.ok) {
+                let errorMessage =
+                    "Could not cancel the job.";
+
+                try {
+                    const errorData =
+                        await response.json();
+
+                    if (errorData.detail) {
+                        errorMessage =
+                            errorData.detail;
+                    }
+                } catch (error) {
+                    // Ignore JSON parsing error.
+                }
+
+                throw new Error(
+                    errorMessage
+                );
+            }
+
+            const job =
+                await response.json();
+
+            updateProgress(
+                job.progress ?? 0,
+                "Cancelling"
+            );
+
+        } catch (error) {
+            console.error(
+                "Cancel job failed:",
+                error
+            );
+
+            button.disabled = false;
+            button.textContent = "Cancel";
+
+            alert(
+                error.message ||
+                "Could not cancel the job."
+            );
+        }
+    });
+}
 
 /* =========================================================
    RESTORE MAIN VIEW
