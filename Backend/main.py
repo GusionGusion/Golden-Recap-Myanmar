@@ -30,14 +30,16 @@ app = FastAPI(
 # =========================================================
 # CORS
 # =========================================================
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://gusiongusion.github.io"
+    ],
     allow_credentials=False,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
 
 # =========================================================
 # DIRECTORIES
