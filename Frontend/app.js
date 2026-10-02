@@ -2583,40 +2583,57 @@ function resetForNewRecap() {
    BACKEND STATUS
    ========================================================= */
 
-function setupBackendStatus() {
+async function setupBackendStatus() {
+    const statusText = $("statusText");
+    const statusDot = $("statusDot");
 
-    /*
-     * STEP 6:
-     * Replace this with:
-     *
-     * GET /health
-     *
-     * For STEP 3 this is only frontend status.
-     */
+    if (!statusText || !statusDot) {
+        return;
+    }
 
+    statusText.textContent = "Backend Connecting...";
+    statusDot.classList.remove("online");
 
-    const statusText =
-        $("backendStatusText");
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/health`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
 
-    const statusDot =
-        $("backendStatusDot");
+        if (!response.ok) {
+            throw new Error(
+                "Backend health check failed."
+            );
+        }
 
+        const data = await response.json();
 
-    if (statusText) {
+        if (data.status === "online") {
+            statusText.textContent =
+                "Backend Connected";
+
+            statusDot.classList.add("online");
+        } else {
+            throw new Error(
+                "Backend is not online."
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Backend status check failed:",
+            error
+        );
 
         statusText.textContent =
-            "Frontend Ready";
-    }
+            "Backend Offline";
 
-
-    if (statusDot) {
-
-        statusDot.classList.add(
-            "online"
-        );
+        statusDot.classList.remove("online");
     }
 }
-
 
 /* =========================================================
    UTILITY — SET TEXT
