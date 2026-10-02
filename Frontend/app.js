@@ -2016,7 +2016,147 @@ function setupGenerateButton() {
         }
     });
 }
+/* =========================================================
+   JOB POLLING
+   ========================================================= */
 
+function startJobPolling(jobId) {
+    stopJobPolling();
+
+    if (!jobId) {
+        return;
+    }
+
+    pollJobStatus(jobId);
+
+    jobPollTimer = setInterval(() => {
+        pollJobStatus(jobId);
+    }, 1000);
+}
+
+
+function stopJobPolling() {
+    if (jobPollTimer) {
+        clearInterval(jobPollTimer);
+        jobPollTimer = null;
+    }
+}
+
+
+async function pollJobStatus(jobId) {
+    if (!jobId) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/jobs/${jobId}`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Could not read job status."
+            );
+        }
+
+        const job = await response.json();
+
+        updateProgress(
+            job.progress ?? 0,
+            job.stage ?? "Processing"
+        );
+
+
+        /* -----------------------------------------
+           PROCESSING
+           ----------------------------------------- */
+
+        if (
+            job.status === "queued" ||
+            job.status === "processing"
+        ) {
+            return;
+        }
+
+
+        /* -----------------------------------------
+           CANCELLING
+           ----------------------------------------- */
+
+        if (job.status === "cancelling") {
+            updateProgress(
+                job.progress ?? 0,
+                "Cancelling"
+            );
+
+            return;
+        }
+
+
+        /* -----------------------------------------
+           COMPLETED
+           ----------------------------------------- */
+
+        if (job.status === "completed") {
+            stopJobPolling();
+
+            updateProgress(
+                100,
+                "Final Video Ready"
+            );
+
+            setTimeout(() => {
+                showResultView(
+                    job.result
+                );
+            }, 500);
+
+            return;
+        }
+
+
+        /* -----------------------------------------
+           CANCELLED
+           ----------------------------------------- */
+
+        if (job.status === "cancelled") {
+            stopJobPolling();
+
+            currentJobId = null;
+
+            restoreMainView();
+
+            return;
+        }
+
+
+        /* -----------------------------------------
+           FAILED
+           ----------------------------------------- */
+
+        if (job.status === "failed") {
+            stopJobPolling();
+
+            currentJobId = null;
+
+            restoreMainView();
+
+            alert(
+                job.error ||
+                job.message ||
+                "Processing failed."
+            );
+
+            return;
+        }
+
+    } catch (error) {
+        console.error(
+            "Job polling failed:",
+            error
+        );
+    }
+}
 
 /* =========================================================
    GENERATE VALIDATION
@@ -2196,60 +2336,54 @@ function showProcessingView() {
    PROGRESS
    ========================================================= */
 
-function updateProgress(
-    percent,
-    stage
-) {
-
-    const percentElement =
+function updateProgress(percent, stage) {
+    const progressPercent =
         $("progressPercent");
 
-    const stageElement =
+    const processingStage =
         $("processingStage");
 
-    const circle =
+    const processingDescription =
+        $("processingDescription");
+
+    const progressCircle =
         $("progressCircle");
 
 
-    if (percentElement) {
+    const safePercent = Math.max(
+        0,
+        Math.min(
+            100,
+            Number(percent) || 0
+        )
+    );
 
-        percentElement.textContent =
-            `${percent}%`;
+
+    if (progressPercent) {
+        progressPercent.textContent =
+            `${Math.round(safePercent)}%`;
     }
 
 
-    if (stageElement) {
-
-        stageElement.textContent =
-            stage;
+    if (processingStage) {
+        processingStage.textContent =
+            stage || "Processing";
     }
 
 
-    if (circle) {
-
-        const circumference =
-            2 *
-            Math.PI *
-            52;
+    if (processingDescription) {
+        processingDescription.textContent =
+            "Please wait while Golden Recap MM processes your video.";
+    }
 
 
-        const offset =
-            circumference -
-            (
-                percent / 100
-            ) *
-            circumference;
-
-
-        circle.style.strokeDasharray =
-            circumference;
-
-
-        circle.style.strokeDashoffset =
-            offset;
+    if (progressCircle) {
+        progressCircle.style.setProperty(
+            "--progress",
+            `${safePercent * 3.6}deg`
+        );
     }
 }
-
 
 /* =========================================================
    CANCEL
