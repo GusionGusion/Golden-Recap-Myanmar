@@ -2573,7 +2573,6 @@ function resetForNewRecap() {
             "smooth"
     });
 }
-
 /* =========================================================
    BACKEND STATUS DEBUG
    ========================================================= */
@@ -2594,6 +2593,14 @@ async function setupBackendStatus() {
 
     statusDot.classList.remove("online");
 
+    const controller =
+        new AbortController();
+
+    const timeoutId =
+        setTimeout(() => {
+            controller.abort();
+        }, 10000);
+
     try {
         const healthUrl =
             `${API_BASE_URL}/health`;
@@ -2607,9 +2614,12 @@ async function setupBackendStatus() {
             healthUrl,
             {
                 method: "GET",
-                cache: "no-store"
+                cache: "no-store",
+                signal: controller.signal
             }
         );
+
+        clearTimeout(timeoutId);
 
         console.log(
             "Backend response:",
@@ -2646,16 +2656,23 @@ async function setupBackendStatus() {
         );
 
     } catch (error) {
+        clearTimeout(timeoutId);
+
         console.error(
             "BACKEND CONNECTION ERROR:",
             error
         );
 
-        statusText.textContent =
-            "Error: " + (
-                error.message ||
-                "Connection failed"
-            );
+        if (error.name === "AbortError") {
+            statusText.textContent =
+                "Error: Backend Timeout";
+        } else {
+            statusText.textContent =
+                "Error: " + (
+                    error.message ||
+                    "Connection failed"
+                );
+        }
 
         statusDot.classList.remove("online");
     }
