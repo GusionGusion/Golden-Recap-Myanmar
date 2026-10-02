@@ -155,44 +155,40 @@ let videoMetadata = {
 /* =========================================================
    INITIALIZATION
    ========================================================= */
-
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    async () => {
+
+        console.log(
+            "Golden Recap MM: DOMContentLoaded"
+        );
 
         loadSettings();
-
         applySettingsToUI();
-
         setupModeButtons();
-
         setupSourceTabs();
-
         setupUpload();
-
         setupSettings();
-
         setupRangeInputs();
-
         setupToggleInputs();
-
         setupSplitMode();
-
         setupCustomFont();
-
         setupUrlInputs();
-
         setupClearButtons();
-
         setupGenerateButton();
-
         setupCancelButton();
-
         setupNewRecapButton();
-
         setupLogoButton();
 
-        setupBackendStatus();
+        console.log(
+            "Golden Recap MM: Checking backend..."
+        );
+
+        await setupBackendStatus();
+
+        console.log(
+            "Golden Recap MM: Backend check finished."
+        );
 
         updateAllUI();
     }
