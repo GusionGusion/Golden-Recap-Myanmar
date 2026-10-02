@@ -2607,13 +2607,14 @@ async function setupBackendStatus() {
         );
 
         const response = await fetch(
-            healthUrl,
-            {
-                method: "GET",
-                cache: "no-store",
-                signal: controller.signal
-            }
-        );
+    healthUrl,
+    {
+        method: "GET",
+        mode: "cors",
+        cache: "no-store",
+        signal: controller.signal
+    }
+);
 
         clearTimeout(timeoutId);
 
