@@ -2626,71 +2626,17 @@ function showResultView(result) {
                 </div>
             `;
 
-        } else {
+                } else {
 
             /*
-             * Temporary backend fallback.
-             * Real video will appear automatically
-             * when video_url is returned.
+             * No real video URL yet.
+             * Keep the existing Result View UI.
+             * The real video preview will be inserted
+             * when the backend returns video_url.
              */
 
-            resultVideoContainer.innerHTML = `
-                <div
-                    class="final-video-card"
-                    style="
-                        width:100%;
-                        max-width:720px;
-                        margin:0 auto;
-                        padding:34px 20px;
-                        text-align:center;
-                        border-radius:18px;
-                        border:1px solid rgba(217,173,85,0.18);
-                        background:
-                            linear-gradient(
-                                145deg,
-                                rgba(217,173,85,0.07),
-                                rgba(255,255,255,0.02)
-                            );
-                        box-shadow:
-                            0 18px 50px
-                            rgba(0,0,0,0.22);
-                    "
-                >
-
-                    <div
-                        style="
-                            font-size:36px;
-                            margin-bottom:12px;
-                        "
-                    >
-                        🎬
-                    </div>
-
-                    <strong
-                        style="
-                            display:block;
-                            color:#f2f3f5;
-                            font-size:16px;
-                        "
-                    >
-                        Final Video Ready
-                    </strong>
-
-                    <p
-                        style="
-                            margin:8px 0 0;
-                            color:#9da4b0;
-                            font-size:12px;
-                            line-height:1.5;
-                        "
-                    >
-                        Your recap has been successfully generated.
-                    </p>
-
-                </div>
-            `;
+            resultVideoContainer.innerHTML = "";
         }
-    }
 
     /* ---------------------------------------------------------
        VIDEO DOWNLOAD
