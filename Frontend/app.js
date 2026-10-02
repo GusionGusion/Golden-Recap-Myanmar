@@ -2386,10 +2386,6 @@ function updateProgress(percent, stage) {
 }
 
 /* =========================================================
-   CANCEL
-   ========================================================= */
-
-/* =========================================================
    CANCEL JOB
    ========================================================= */
 
@@ -2578,9 +2574,8 @@ function resetForNewRecap() {
     });
 }
 
-
 /* =========================================================
-   BACKEND STATUS
+   BACKEND STATUS DEBUG
    ========================================================= */
 
 async function setupBackendStatus() {
@@ -2588,43 +2583,71 @@ async function setupBackendStatus() {
     const statusDot = $("statusDot");
 
     if (!statusText || !statusDot) {
+        console.error(
+            "Backend status elements not found."
+        );
         return;
     }
 
-    statusText.textContent = "Backend Connecting...";
+    statusText.textContent =
+        "Backend Connecting...";
+
     statusDot.classList.remove("online");
 
     try {
+        const healthUrl =
+            `${API_BASE_URL}/health`;
+
+        console.log(
+            "Checking backend:",
+            healthUrl
+        );
+
         const response = await fetch(
-            `${API_BASE_URL}/health`,
+            healthUrl,
             {
                 method: "GET",
                 cache: "no-store"
             }
         );
 
+        console.log(
+            "Backend response:",
+            response.status,
+            response.statusText
+        );
+
         if (!response.ok) {
             throw new Error(
-                "Backend health check failed."
+                `HTTP ${response.status} ${response.statusText}`
             );
         }
 
-        const data = await response.json();
+        const data =
+            await response.json();
+
+        console.log(
+            "Backend health data:",
+            data
+        );
 
         if (data.status === "online") {
             statusText.textContent =
                 "Backend Connected";
 
             statusDot.classList.add("online");
-        } else {
-            throw new Error(
-                "Backend is not online."
-            );
+
+            return;
         }
+
+        throw new Error(
+            "Backend returned status: " +
+            data.status
+        );
 
     } catch (error) {
         console.error(
-            "Backend status check failed:",
+            "BACKEND CONNECTION ERROR:",
             error
         );
 
