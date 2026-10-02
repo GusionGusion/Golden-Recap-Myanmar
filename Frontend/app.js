@@ -1,3 +1,7 @@
+const API_BASE_URL = "https://golden-recap-mm-api.onrender.com";
+
+let currentJobId = null;
+let jobPollTimer = null;
 "use strict";
 
 /* =========================================================
