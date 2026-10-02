@@ -2645,18 +2645,20 @@ async function setupBackendStatus() {
             data.status
         );
 
-    } catch (error) {
+        } catch (error) {
         console.error(
             "BACKEND CONNECTION ERROR:",
             error
         );
 
         statusText.textContent =
-            "Backend Offline";
+            "Error: " + (
+                error.message ||
+                "Connection failed"
+            );
 
         statusDot.classList.remove("online");
     }
-}
 
 /* =========================================================
    UTILITY — SET TEXT
