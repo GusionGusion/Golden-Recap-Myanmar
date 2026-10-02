@@ -2645,7 +2645,7 @@ async function setupBackendStatus() {
             data.status
         );
 
-        } catch (error) {
+    } catch (error) {
         console.error(
             "BACKEND CONNECTION ERROR:",
             error
@@ -2659,7 +2659,7 @@ async function setupBackendStatus() {
 
         statusDot.classList.remove("online");
     }
-
+}
 /* =========================================================
    UTILITY — SET TEXT
    ========================================================= */
