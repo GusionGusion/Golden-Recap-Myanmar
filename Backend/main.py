@@ -69,7 +69,23 @@ async def health():
         "service": "Golden Recap MM",
         "message": "Backend is running"
     }
+@app.get("/api/test-ai")
+async def test_ai():
+    from job_manager import test_ai_router
 
+    try:
+        result = test_ai_router()
+
+        return {
+            "status": "success",
+            "result": result
+        }
+
+    except Exception as error:
+        return {
+            "status": "error",
+            "error": str(error)
+        }
 
 # =========================================================
 # ROOT
