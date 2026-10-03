@@ -51,6 +51,62 @@ MAX_RETRIES = 3
 OPENROUTER_BASE_URL = (
     "https://openrouter.ai/api/v1"
 )
+# =========================================================
+# GOLDEN RECAP MM - AI ROUTER CONFIG
+# =========================================================
+
+AI_MODE = os.getenv(
+    "AI_MODE",
+    "dev"
+).lower().strip()
+
+# ---------------------------------------------------------
+# DEV / FREE TEST
+# ---------------------------------------------------------
+
+DEV_TRANSLATION_PROVIDER = os.getenv(
+    "DEV_TRANSLATION_PROVIDER",
+    "openrouter"
+)
+
+DEV_TRANSLATION_MODEL = os.getenv(
+    "DEV_TRANSLATION_MODEL",
+    "google/gemma-4-31b-it:free"
+)
+
+DEV_CAPTION_PROVIDER = os.getenv(
+    "DEV_CAPTION_PROVIDER",
+    "openrouter"
+)
+
+DEV_CAPTION_MODEL = os.getenv(
+    "DEV_CAPTION_MODEL",
+    "google/gemma-4-31b-it:free"
+)
+
+# ---------------------------------------------------------
+# PRODUCTION
+# ---------------------------------------------------------
+
+PROD_TRANSLATION_PROVIDER = os.getenv(
+    "PROD_TRANSLATION_PROVIDER",
+    "gemini"
+)
+
+PROD_TRANSLATION_MODEL = os.getenv(
+    "PROD_TRANSLATION_MODEL",
+    DEFAULT_GEMINI_MODEL
+)
+
+PROD_CAPTION_PROVIDER = os.getenv(
+    "PROD_CAPTION_PROVIDER",
+    "gemini"
+)
+
+PROD_CAPTION_MODEL = os.getenv(
+    "PROD_CAPTION_MODEL",
+    DEFAULT_GEMINI_MODEL
+)
 
 
 # =========================================================
