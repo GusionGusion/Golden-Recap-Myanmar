@@ -2038,32 +2038,27 @@ function stopJobPolling() {
     }
 }
 
-
 async function pollJobStatus(jobId) {
+
     if (!jobId) {
         return;
     }
 
     try {
+
         const response = await fetch(
-    `${API_BASE_URL}/api/jobs/${jobId}`
-);
+            `${API_BASE_URL}/api/jobs/${jobId}`
+        );
 
-if (!response.ok) {
-    throw new Error(
-        "Could not read job status."
-    );
-}
-}
+        if (!response.ok) {
 
-if (!response.ok) {
-    throw new Error(
-        "Could not read job status."
-    );
-}
+            throw new Error(
+                "Could not read job status."
+            );
         }
 
-        const job = await response.json();
+        const job =
+            await response.json();
 
         updateProgress(
             job.progress ?? 0,
@@ -2079,6 +2074,7 @@ if (!response.ok) {
             job.status === "queued" ||
             job.status === "processing"
         ) {
+
             return;
         }
 
@@ -2087,7 +2083,10 @@ if (!response.ok) {
            CANCELLING
            ----------------------------------------- */
 
-        if (job.status === "cancelling") {
+        if (
+            job.status === "cancelling"
+        ) {
+
             updateProgress(
                 job.progress ?? 0,
                 "Cancelling"
@@ -2101,7 +2100,10 @@ if (!response.ok) {
            COMPLETED
            ----------------------------------------- */
 
-        if (job.status === "completed") {
+        if (
+            job.status === "completed"
+        ) {
+
             stopJobPolling();
 
             updateProgress(
@@ -2109,11 +2111,16 @@ if (!response.ok) {
                 "Final Video Ready"
             );
 
-            setTimeout(() => {
-                showResultView(
-                    job.result
-                );
-            }, 500);
+            setTimeout(
+                () => {
+
+                    showResultView(
+                        job.result
+                    );
+
+                },
+                500
+            );
 
             return;
         }
@@ -2123,7 +2130,10 @@ if (!response.ok) {
            CANCELLED
            ----------------------------------------- */
 
-        if (job.status === "cancelled") {
+        if (
+            job.status === "cancelled"
+        ) {
+
             stopJobPolling();
 
             currentJobId = null;
@@ -2138,7 +2148,10 @@ if (!response.ok) {
            FAILED
            ----------------------------------------- */
 
-        if (job.status === "failed") {
+        if (
+            job.status === "failed"
+        ) {
+
             stopJobPolling();
 
             currentJobId = null;
@@ -2155,12 +2168,15 @@ if (!response.ok) {
         }
 
     } catch (error) {
+
         console.error(
             "Job polling failed:",
             error
         );
     }
 }
+    
+        
 
 /* =========================================================
    GENERATE VALIDATION
