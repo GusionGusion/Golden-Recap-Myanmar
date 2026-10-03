@@ -188,7 +188,6 @@ def router_text(
             return openrouter_text(
                 prompt,
                 model=model,
-                system_instruction=system_instruction,
             )
 
         if provider == "openai":
@@ -196,7 +195,6 @@ def router_text(
             return openai_text(
                 prompt,
                 model=model,
-                system_instruction=system_instruction,
             )
 
         return gemini_text(
@@ -230,7 +228,6 @@ def router_text(
             return openrouter_text(
                 prompt,
                 model=model,
-                system_instruction=system_instruction,
             )
 
         if provider == "openai":
@@ -238,7 +235,6 @@ def router_text(
             return openai_text(
                 prompt,
                 model=model,
-                system_instruction=system_instruction,
             )
 
         return gemini_text(
