@@ -3,6 +3,15 @@ import uuid
 from datetime import datetime
 from ai import router_text
 # =========================================================
+# GOLDEN RECAP MM - WHISPER
+# =========================================================
+
+import os
+import subprocess
+import tempfile
+
+from faster_whisper import WhisperModel
+# =========================================================
 # AI ROUTER CONNECTION TEST
 # =========================================================
 
@@ -27,6 +36,102 @@ JOBS = {}
 
 JOBS_LOCK = threading.Lock()
 
+# =========================================================
+# TRANSCRIBE VIDEO
+# =========================================================
+
+def transcribe_video(video_path):
+    """
+    Extract mono 16 kHz WAV from video
+    and transcribe using Faster-Whisper.
+    """
+
+    if not video_path:
+        raise ValueError("Video path is required.")
+
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(
+            f"Video file not found: {video_path}"
+        )
+
+    wav_path = None
+
+    try:
+
+        with tempfile.NamedTemporaryFile(
+            suffix=".wav",
+            delete=False
+        ) as temp_audio:
+
+            wav_path = temp_audio.name
+
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                video_path,
+                "-vn",
+                "-ac",
+                "1",
+                "-ar",
+                "16000",
+                "-acodec",
+                "pcm_s16le",
+                wav_path,
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        model = WhisperModel(
+            "tiny",
+            device="cpu",
+            compute_type="int8",
+            cpu_threads=4,
+            num_workers=1,
+        )
+
+        segments, info = model.transcribe(
+            wav_path,
+            language="en",
+            task="transcribe",
+            beam_size=1,
+            best_of=1,
+            temperature=0,
+            condition_on_previous_text=False,
+            vad_filter=True,
+        )
+
+        transcript_segments = []
+
+        for segment in segments:
+
+            transcript_segments.append(
+                {
+                    "start": float(segment.start),
+                    "end": float(segment.end),
+                    "text": segment.text.strip(),
+                }
+            )
+
+        full_text = " ".join(
+            item["text"]
+            for item in transcript_segments
+            if item["text"]
+        ).strip()
+
+        return {
+            "text": full_text,
+            "segments": transcript_segments,
+            "language": info.language,
+        }
+
+    finally:
+
+        if wav_path and os.path.exists(wav_path):
+            os.remove(wav_path)
 
 # =========================================================
 # CREATE JOB
