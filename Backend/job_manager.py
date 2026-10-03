@@ -287,31 +287,37 @@ def is_cancel_requested(job_id):
 
 # =========================================================
 # TEMPORARY WORKER
+# STEP 9 - REAL TRANSCRIPTION
 # =========================================================
 
 def temporary_worker(job_id):
 
     """
-    Temporary worker for API testing.
+    Worker with real Faster-Whisper transcription.
 
-    This will later be replaced by
-    the real Golden Recap MM pipeline.
+    Later stages are still temporary simulation.
     """
 
     import time
 
-    stages = [
-        (5, "Uploading Video"),
-        (15, "Transcribing"),
-        (30, "Scene Analysing"),
-        (45, "Generating Recap"),
-        (60, "Myanmar Translation"),
-        (75, "Generating Voiceover"),
-        (85, "Creating Subtitles"),
-        (92, "Freeze + Zoom"),
-    ]
-
     try:
+
+        # -------------------------------------------------
+        # GET JOB
+        # -------------------------------------------------
+
+        with JOBS_LOCK:
+
+            job = JOBS.get(job_id)
+
+            if job is None:
+                return
+
+            video_path = job.get("video_path")
+
+        # -------------------------------------------------
+        # 5% - UPLOADING VIDEO
+        # -------------------------------------------------
 
         update_job(
             job_id,
@@ -321,27 +327,64 @@ def temporary_worker(job_id):
             message="Video upload completed.",
         )
 
-        for progress, stage in stages[1:]:
-
-            time.sleep(0.8)
-
-            if is_cancel_requested(job_id):
-
-                update_job(
-                    job_id,
-                    status="cancelled",
-                    message="Job cancelled.",
-                )
-
-                return
+        if is_cancel_requested(job_id):
 
             update_job(
                 job_id,
-                status="processing",
-                progress=progress,
-                stage=stage,
-                message=stage,
+                status="cancelled",
+                message="Job cancelled.",
             )
+
+            return
+
+        # -------------------------------------------------
+        # 15% - TRANSCRIBING
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=15,
+            stage="Transcribing",
+            message="Transcribing video...",
+        )
+
+        if is_cancel_requested(job_id):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
+
+        transcript = transcribe_video(
+            video_path
+        )
+
+        # -------------------------------------------------
+        # STORE TRANSCRIPT INTERNALLY
+        # -------------------------------------------------
+
+        with JOBS_LOCK:
+
+            job = JOBS.get(job_id)
+
+            if job is not None:
+                job["transcript"] = transcript
+
+        # -------------------------------------------------
+        # 30% - SCENE ANALYSING
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=30,
+            stage="Scene Analysing",
+            message="Transcription completed.",
+        )
 
         time.sleep(0.8)
 
@@ -354,6 +397,130 @@ def temporary_worker(job_id):
             )
 
             return
+
+        # -------------------------------------------------
+        # 45% - GENERATING RECAP
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=45,
+            stage="Generating Recap",
+            message="Scene analysis started.",
+        )
+
+        time.sleep(0.8)
+
+        if is_cancel_requested(job_id):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
+
+        # -------------------------------------------------
+        # 60% - MYANMAR TRANSLATION
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=60,
+            stage="Myanmar Translation",
+            message="Generating recap.",
+        )
+
+        time.sleep(0.8)
+
+        if is_cancel_requested(job_id):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
+
+        # -------------------------------------------------
+        # 75% - GENERATING VOICEOVER
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=75,
+            stage="Generating Voiceover",
+            message="Translating recap to Myanmar.",
+        )
+
+        time.sleep(0.8)
+
+        if is_cancel_requested(job_id):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
+
+        # -------------------------------------------------
+        # 85% - CREATING SUBTITLES
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=85,
+            stage="Creating Subtitles",
+            message="Generating voiceover.",
+        )
+
+        time.sleep(0.8)
+
+        if is_cancel_requested(job_id):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
+
+        # -------------------------------------------------
+        # 92% - FREEZE + ZOOM
+        # -------------------------------------------------
+
+        update_job(
+            job_id,
+            status="processing",
+            progress=92,
+            stage="Freeze + Zoom",
+            message="Creating subtitles.",
+        )
+
+        time.sleep(0.8)
+
+        if is_cancel_requested(job_id):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
+
+        # -------------------------------------------------
+        # 100% - FINAL VIDEO READY
+        # -------------------------------------------------
 
         update_job(
             job_id,
