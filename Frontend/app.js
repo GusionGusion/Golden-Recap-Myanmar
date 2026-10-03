@@ -2046,13 +2046,36 @@ async function pollJobStatus(jobId) {
 
     try {
         const response = await fetch(
-            `${API_BASE_URL}/api/jobs/${jobId}`
-        );
+    `${API_BASE_URL}/api/jobs/${jobId}`
+);
 
-        if (!response.ok) {
-            throw new Error(
-                "Could not read job status."
-            );
+if (response.status === 404) {
+
+    console.warn(
+        "Job no longer exists on backend:",
+        jobId
+    );
+
+    stopJobPolling();
+
+    if (currentJobId === jobId) {
+        currentJobId = null;
+    }
+
+    restoreMainView();
+
+    alert(
+        "This processing job is no longer available. Please generate the recap again."
+    );
+
+    return;
+}
+
+if (!response.ok) {
+    throw new Error(
+        "Could not read job status."
+    );
+}
         }
 
         const job = await response.json();
