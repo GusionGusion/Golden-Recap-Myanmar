@@ -2,7 +2,21 @@ import threading
 import uuid
 from datetime import datetime
 from ai import router_text
+# =========================================================
+# AI ROUTER CONNECTION TEST
+# =========================================================
 
+def test_ai_router():
+    prompt = """
+Reply with exactly one short sentence:
+
+Golden Recap MM AI Router connection test successful.
+"""
+
+    return router_text(
+        task="caption",
+        prompt=prompt,
+    )
 
 # =========================================================
 # GOLDEN RECAP MM
