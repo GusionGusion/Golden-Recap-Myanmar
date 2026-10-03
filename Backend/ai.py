@@ -257,7 +257,51 @@ def router_text(
         system_instruction=system_instruction,
     )
 
+# =========================================================
+# GOLDEN RECAP MM - VISION ROUTER
+# =========================================================
 
+def router_vision(
+    task,
+    prompt,
+    image_bytes,
+    mime_type="image/jpeg",
+    system_instruction=None,
+):
+    """
+    Route vision tasks by task name.
+
+    Scene analysis is routed to Gemini Vision.
+    Other vision tasks can be added later.
+    """
+
+    task = str(task or "").lower().strip()
+
+    # -----------------------------------------------------
+    # SCENE ANALYSIS
+    # -----------------------------------------------------
+
+    if task in [
+        "scene",
+        "scene_analysis",
+        "movie_scene",
+        "animal_scene",
+    ]:
+        return generate_vision(
+            prompt=prompt,
+            image_bytes=image_bytes,
+            mime_type=mime_type,
+        )
+
+    # -----------------------------------------------------
+    # FALLBACK
+    # -----------------------------------------------------
+
+    return generate_vision(
+        prompt=prompt,
+        image_bytes=image_bytes,
+        mime_type=mime_type,
+    )
 
 # =========================================================
 # API KEY HELPERS
