@@ -107,6 +107,156 @@ PROD_CAPTION_MODEL = os.getenv(
     "PROD_CAPTION_MODEL",
     DEFAULT_GEMINI_MODEL
 )
+# =========================================================
+# GOLDEN RECAP MM - TASK ROUTER
+# =========================================================
+
+def router_text(
+    task,
+    prompt,
+    system_instruction=None,
+):
+    """
+    Route text AI tasks by task name.
+
+    DEV:
+        Translation / Caption -> configured free model
+
+    PRODUCTION:
+        Translation / Caption -> configured production model
+
+    Scene Analysis / English Recap:
+        Gemini
+    """
+
+    task = str(task or "").lower().strip()
+
+    # -----------------------------------------------------
+    # SCENE ANALYSIS
+    # -----------------------------------------------------
+
+    if task in [
+        "scene",
+        "scene_analysis",
+        "movie_scene",
+        "animal_scene",
+    ]:
+        return gemini_text(
+            prompt,
+            model=DEFAULT_GEMINI_MODEL,
+            system_instruction=system_instruction,
+        )
+
+    # -----------------------------------------------------
+    # ENGLISH RECAP
+    # -----------------------------------------------------
+
+    if task in [
+        "recap",
+        "english_recap",
+        "movie_recap",
+        "animal_recap",
+    ]:
+        return gemini_text(
+            prompt,
+            model=DEFAULT_GEMINI_MODEL,
+            system_instruction=system_instruction,
+        )
+
+    # -----------------------------------------------------
+    # TRANSLATION
+    # -----------------------------------------------------
+
+    if task in [
+        "translation",
+        "translate",
+        "myanmar_translation",
+    ]:
+
+        if AI_MODE == "production":
+
+            provider = PROD_TRANSLATION_PROVIDER
+            model = PROD_TRANSLATION_MODEL
+
+        else:
+
+            provider = DEV_TRANSLATION_PROVIDER
+            model = DEV_TRANSLATION_MODEL
+
+        if provider == "openrouter":
+
+            return openrouter_text(
+                prompt,
+                model=model,
+                system_instruction=system_instruction,
+            )
+
+        if provider == "openai":
+
+            return openai_text(
+                prompt,
+                model=model,
+                system_instruction=system_instruction,
+            )
+
+        return gemini_text(
+            prompt,
+            model=model,
+            system_instruction=system_instruction,
+        )
+
+    # -----------------------------------------------------
+    # CAPTION
+    # -----------------------------------------------------
+
+    if task in [
+        "caption",
+        "social_caption",
+        "post_caption",
+    ]:
+
+        if AI_MODE == "production":
+
+            provider = PROD_CAPTION_PROVIDER
+            model = PROD_CAPTION_MODEL
+
+        else:
+
+            provider = DEV_CAPTION_PROVIDER
+            model = DEV_CAPTION_MODEL
+
+        if provider == "openrouter":
+
+            return openrouter_text(
+                prompt,
+                model=model,
+                system_instruction=system_instruction,
+            )
+
+        if provider == "openai":
+
+            return openai_text(
+                prompt,
+                model=model,
+                system_instruction=system_instruction,
+            )
+
+        return gemini_text(
+            prompt,
+            model=model,
+            system_instruction=system_instruction,
+        )
+
+    # -----------------------------------------------------
+    # FALLBACK
+    # -----------------------------------------------------
+
+    return gemini_text(
+        prompt,
+        model=DEFAULT_GEMINI_MODEL,
+        system_instruction=system_instruction,
+    )
+
 
 
 # =========================================================
