@@ -54,18 +54,44 @@ JOBS = {}
 
 JOBS_LOCK = threading.Lock()
 
+
 # =========================================================
 # TRANSCRIBE VIDEO
 # =========================================================
 
+_WHISPER_MODEL = None
+
+
+def get_whisper_model():
+    """
+    Load Faster-Whisper Tiny model once and reuse it.
+    """
+
+    global _WHISPER_MODEL
+
+    if _WHISPER_MODEL is None:
+
+        _WHISPER_MODEL = WhisperModel(
+            "tiny",
+            device="cpu",
+            compute_type="int8",
+            cpu_threads=4,
+            num_workers=1,
+        )
+
+    return _WHISPER_MODEL
+
+
 def transcribe_video(video_path):
     """
     Extract mono 16 kHz WAV from video
-    and transcribe using Faster-Whisper.
+    and transcribe using Faster-Whisper Tiny.
     """
 
     if not video_path:
-        raise ValueError("Video path is required.")
+        raise ValueError(
+            "Video path is required."
+        )
 
     if not os.path.exists(video_path):
         raise FileNotFoundError(
@@ -82,6 +108,10 @@ def transcribe_video(video_path):
         ) as temp_audio:
 
             wav_path = temp_audio.name
+
+        # -------------------------------------------------
+        # EXTRACT AUDIO
+        # -------------------------------------------------
 
         subprocess.run(
             [
@@ -103,13 +133,15 @@ def transcribe_video(video_path):
             stderr=subprocess.PIPE,
         )
 
-        model = WhisperModel(
-            "tiny",
-            device="cpu",
-            compute_type="int8",
-            cpu_threads=4,
-            num_workers=1,
-        )
+        # -------------------------------------------------
+        # LOAD TINY WHISPER MODEL
+        # -------------------------------------------------
+
+        model = get_whisper_model()
+
+        # -------------------------------------------------
+        # TRANSCRIBE
+        # -------------------------------------------------
 
         segments, info = model.transcribe(
             wav_path,
@@ -120,17 +152,25 @@ def transcribe_video(video_path):
             temperature=0,
             condition_on_previous_text=False,
             vad_filter=True,
+            vad_parameters={
+                "min_silence_duration_ms": 500,
+            },
         )
 
         transcript_segments = []
 
         for segment in segments:
 
+            text = segment.text.strip()
+
+            if not text:
+                continue
+
             transcript_segments.append(
                 {
                     "start": float(segment.start),
                     "end": float(segment.end),
-                    "text": segment.text.strip(),
+                    "text": text,
                 }
             )
 
@@ -149,7 +189,11 @@ def transcribe_video(video_path):
     finally:
 
         if wav_path and os.path.exists(wav_path):
-            os.remove(wav_path)
+
+            try:
+                os.remove(wav_path)
+            except Exception:
+                pass
 
 # =========================================================
 # CREATE JOB
