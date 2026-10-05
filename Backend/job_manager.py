@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import subprocess
 import tempfile
+import time
 
 from ai import router_text
 from supabase import create_client
@@ -63,13 +64,17 @@ _WHISPER_MODEL = None
 
 
 def get_whisper_model():
-    """
-    Load Faster-Whisper Tiny model once and reuse it.
-    """
 
     global _WHISPER_MODEL
 
     if _WHISPER_MODEL is None:
+
+        print(
+            "[WHISPER] Tiny model loading...",
+            flush=True
+        )
+
+        model_start = time.perf_counter()
 
         _WHISPER_MODEL = WhisperModel(
             "tiny",
@@ -79,10 +84,29 @@ def get_whisper_model():
             num_workers=1,
         )
 
+        model_time = (
+            time.perf_counter()
+            - model_start
+        )
+
+        print(
+            f"[WHISPER] Tiny model loaded in "
+            f"{model_time:.2f}s",
+            flush=True
+        )
+
+    else:
+
+        print(
+            "[WHISPER] Reusing loaded Tiny model.",
+            flush=True
+        )
+
     return _WHISPER_MODEL
 
 
 def transcribe_video(video_path):
+
     """
     Extract mono 16 kHz WAV from video
     and transcribe using Faster-Whisper Tiny.
@@ -98,9 +122,22 @@ def transcribe_video(video_path):
             f"Video file not found: {video_path}"
         )
 
+    total_start = time.perf_counter()
+
     wav_path = None
 
     try:
+
+        # -------------------------------------------------
+        # AUDIO EXTRACTION
+        # -------------------------------------------------
+
+        print(
+            "[WHISPER] Audio extraction started...",
+            flush=True
+        )
+
+        audio_start = time.perf_counter()
 
         with tempfile.NamedTemporaryFile(
             suffix=".wav",
@@ -108,10 +145,6 @@ def transcribe_video(video_path):
         ) as temp_audio:
 
             wav_path = temp_audio.name
-
-        # -------------------------------------------------
-        # EXTRACT AUDIO
-        # -------------------------------------------------
 
         subprocess.run(
             [
@@ -133,15 +166,35 @@ def transcribe_video(video_path):
             stderr=subprocess.PIPE,
         )
 
+        audio_time = (
+            time.perf_counter()
+            - audio_start
+        )
+
+        print(
+            f"[WHISPER] Audio extraction completed "
+            f"in {audio_time:.2f}s",
+            flush=True
+        )
+
         # -------------------------------------------------
-        # LOAD TINY WHISPER MODEL
+        # LOAD TINY MODEL
         # -------------------------------------------------
 
         model = get_whisper_model()
 
         # -------------------------------------------------
-        # TRANSCRIBE
+        # TRANSCRIPTION
         # -------------------------------------------------
+
+        print(
+            "[WHISPER] Transcription started...",
+            flush=True
+        )
+
+        transcription_start = (
+            time.perf_counter()
+        )
 
         segments, info = model.transcribe(
             wav_path,
@@ -168,17 +221,59 @@ def transcribe_video(video_path):
 
             transcript_segments.append(
                 {
-                    "start": float(segment.start),
-                    "end": float(segment.end),
+                    "start": float(
+                        segment.start
+                    ),
+                    "end": float(
+                        segment.end
+                    ),
                     "text": text,
                 }
             )
+
+        transcription_time = (
+            time.perf_counter()
+            - transcription_start
+        )
+
+        print(
+            f"[WHISPER] Transcription completed "
+            f"in {transcription_time:.2f}s",
+            flush=True
+        )
+
+        # -------------------------------------------------
+        # BUILD FULL TEXT
+        # -------------------------------------------------
 
         full_text = " ".join(
             item["text"]
             for item in transcript_segments
             if item["text"]
         ).strip()
+
+        total_time = (
+            time.perf_counter()
+            - total_start
+        )
+
+        print(
+            f"[WHISPER] Total transcription pipeline "
+            f"completed in {total_time:.2f}s",
+            flush=True
+        )
+
+        print(
+            f"[WHISPER] Segments: "
+            f"{len(transcript_segments)}",
+            flush=True
+        )
+
+        print(
+            f"[WHISPER] Detected language: "
+            f"{info.language}",
+            flush=True
+        )
 
         return {
             "text": full_text,
