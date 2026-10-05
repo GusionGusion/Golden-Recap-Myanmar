@@ -129,6 +129,21 @@ def transcribe_video(video_path):
     try:
 
         # -------------------------------------------------
+        # CHECK VIDEO FILE
+        # -------------------------------------------------
+
+        video_size_mb = (
+            os.path.getsize(video_path)
+            / (1024 * 1024)
+        )
+
+        print(
+            f"[WHISPER] Video file size: "
+            f"{video_size_mb:.2f} MB",
+            flush=True
+        )
+
+        # -------------------------------------------------
         # AUDIO EXTRACTION
         # -------------------------------------------------
 
@@ -146,34 +161,110 @@ def transcribe_video(video_path):
 
             wav_path = temp_audio.name
 
-        subprocess.run(
-            [
-                "ffmpeg",
-                "-y",
-                "-i",
-                video_path,
-                "-vn",
-                "-ac",
-                "1",
-                "-ar",
-                "16000",
-                "-acodec",
-                "pcm_s16le",
-                wav_path,
-            ],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+        ffmpeg_command = [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-i",
+            video_path,
+            "-vn",
+            "-ac",
+            "1",
+            "-ar",
+            "16000",
+            "-acodec",
+            "pcm_s16le",
+            wav_path,
+        ]
+
+        print(
+            "[WHISPER] Running FFmpeg...",
+            flush=True
         )
+
+        try:
+
+            ffmpeg_result = subprocess.run(
+                ffmpeg_command,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=300,
+            )
+
+        except subprocess.TimeoutExpired:
+
+            elapsed = (
+                time.perf_counter()
+                - audio_start
+            )
+
+            print(
+                f"[WHISPER] FFmpeg timeout after "
+                f"{elapsed:.2f}s",
+                flush=True
+            )
+
+            raise RuntimeError(
+                "FFmpeg audio extraction timed out "
+                "after 5 minutes."
+            )
+
+        except subprocess.CalledProcessError as error:
+
+            ffmpeg_error = (
+                error.stderr
+                or "Unknown FFmpeg error."
+            )
+
+            print(
+                "[WHISPER] FFmpeg failed:",
+                flush=True
+            )
+
+            print(
+                ffmpeg_error[-4000:],
+                flush=True
+            )
+
+            raise RuntimeError(
+                "FFmpeg audio extraction failed: "
+                + ffmpeg_error[-2000:]
+            )
 
         audio_time = (
             time.perf_counter()
             - audio_start
         )
 
+        # -------------------------------------------------
+        # CHECK WAV
+        # -------------------------------------------------
+
+        if not os.path.exists(wav_path):
+
+            raise RuntimeError(
+                "FFmpeg completed but WAV file "
+                "was not created."
+            )
+
+        wav_size_mb = (
+            os.path.getsize(wav_path)
+            / (1024 * 1024)
+        )
+
         print(
             f"[WHISPER] Audio extraction completed "
             f"in {audio_time:.2f}s",
+            flush=True
+        )
+
+        print(
+            f"[WHISPER] WAV size: "
+            f"{wav_size_mb:.2f} MB",
             flush=True
         )
 
@@ -287,8 +378,19 @@ def transcribe_video(video_path):
 
             try:
                 os.remove(wav_path)
-            except Exception:
-                pass
+
+                print(
+                    "[WHISPER] Temporary WAV removed.",
+                    flush=True
+                )
+
+            except Exception as cleanup_error:
+
+                print(
+                    "[WHISPER] Could not remove "
+                    f"temporary WAV: {cleanup_error}",
+                    flush=True
+                )
 
 # =========================================================
 # CREATE JOB
