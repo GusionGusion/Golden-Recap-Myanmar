@@ -273,35 +273,45 @@ def update_job(
     result=None,
     error=None,
 ):
+    if SUPABASE_CLIENT is None:
+        raise RuntimeError(
+            "Supabase is not configured."
+        )
 
-    with JOBS_LOCK:
+    updates = {
+        "updated_at": datetime.utcnow().isoformat()
+    }
 
-        job = JOBS.get(job_id)
+    if progress is not None:
+        updates["progress"] = int(progress)
 
-        if job is None:
-            return None
+    if stage is not None:
+        updates["stage"] = stage
 
-        if progress is not None:
-            job["progress"] = int(progress)
+    if status is not None:
+        updates["status"] = status
 
-        if stage is not None:
-            job["stage"] = stage
+    if message is not None:
+        updates["message"] = message
 
-        if status is not None:
-            job["status"] = status
+    if result is not None:
+        updates["result"] = result
 
-        if message is not None:
-            job["message"] = message
+    if error is not None:
+        updates["error"] = error
 
-        if result is not None:
-            job["result"] = result
+    response = (
+        SUPABASE_CLIENT
+        .table("jobs")
+        .update(updates)
+        .eq("job_id", job_id)
+        .execute()
+    )
 
-        if error is not None:
-            job["error"] = error
+    if not response.data:
+        return None
 
-        job["updated_at"] = datetime.utcnow().isoformat()
-
-        return public_job(job)
+    return public_job(response.data[0])
 
 
 # =========================================================
