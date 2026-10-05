@@ -71,22 +71,34 @@ async def health():
     }
 @app.get("/api/test-ai")
 async def test_ai():
-    from job_manager import test_ai_router
 
     try:
-        result = test_ai_router()
+        from ai import gemini_text
+
+        result = gemini_text(
+            prompt=(
+                "Reply with exactly: "
+                "Golden Recap MM Gemini test successful."
+            ),
+            model="gemini-3.8-flash",
+            max_retries=1,
+        )
 
         return {
             "status": "success",
-            "result": result
+            "provider": "gemini",
+            "model": "gemini-3.8-flash",
+            "result": result,
         }
 
     except Exception as error:
+
         return {
             "status": "error",
-            "error": str(error)
+            "provider": "gemini",
+            "model": "gemini-3.8-flash",
+            "error": str(error),
         }
-
 # =========================================================
 # ROOT
 # =========================================================
