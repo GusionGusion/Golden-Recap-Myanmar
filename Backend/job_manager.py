@@ -10,11 +10,14 @@ from ai import router_text
 from supabase import create_client
 
 from faster_whisper import WhisperModel
+
+
 # =========================================================
 # AI ROUTER CONNECTION TEST
 # =========================================================
 
 def test_ai_router():
+
     prompt = """
 Reply with exactly one short sentence:
 
@@ -26,10 +29,12 @@ Golden Recap MM AI Router connection test successful.
         prompt=prompt,
     )
 
+
 # =========================================================
 # GOLDEN RECAP MM
 # JOB MANAGER
 # =========================================================
+
 SUPABASE_URL = os.getenv(
     "SUPABASE_URL",
     ""
@@ -46,10 +51,12 @@ if (
     SUPABASE_URL
     and SUPABASE_SERVICE_ROLE_KEY
 ):
+
     SUPABASE_CLIENT = create_client(
         SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY,
     )
+
 
 JOBS = {}
 
@@ -57,7 +64,7 @@ JOBS_LOCK = threading.Lock()
 
 
 # =========================================================
-# TRANSCRIBE VIDEO
+# WHISPER MODEL
 # =========================================================
 
 _WHISPER_MODEL = None
@@ -105,6 +112,10 @@ def get_whisper_model():
     return _WHISPER_MODEL
 
 
+# =========================================================
+# TRANSCRIBE VIDEO
+# =========================================================
+
 def transcribe_video(video_path):
 
     """
@@ -113,11 +124,13 @@ def transcribe_video(video_path):
     """
 
     if not video_path:
+
         raise ValueError(
             "Video path is required."
         )
 
     if not os.path.exists(video_path):
+
         raise FileNotFoundError(
             f"Video file not found: {video_path}"
         )
@@ -186,7 +199,7 @@ def transcribe_video(video_path):
 
         try:
 
-            ffmpeg_result = subprocess.run(
+            subprocess.run(
                 ffmpeg_command,
                 check=True,
                 stdout=subprocess.PIPE,
@@ -301,7 +314,21 @@ def transcribe_video(video_path):
             },
         )
 
+        print(
+            "[WHISPER] Whisper iterator created. "
+            "Reading segments...",
+            flush=True
+        )
+
         transcript_segments = []
+
+        last_log_time = time.perf_counter()
+
+        segment_count = 0
+
+        # -------------------------------------------------
+        # READ WHISPER SEGMENTS
+        # -------------------------------------------------
 
         for segment in segments:
 
@@ -322,6 +349,38 @@ def transcribe_video(video_path):
                 }
             )
 
+            segment_count += 1
+
+            now = time.perf_counter()
+
+            if (
+                now - last_log_time
+                >= 10
+            ):
+
+                elapsed = (
+                    now
+                    - transcription_start
+                )
+
+                current_video_time = (
+                    float(segment.end)
+                )
+
+                print(
+                    f"[WHISPER] Still transcribing... "
+                    f"segments={segment_count}, "
+                    f"video_time={current_video_time:.1f}s, "
+                    f"elapsed={elapsed:.1f}s",
+                    flush=True
+                )
+
+                last_log_time = now
+
+        # -------------------------------------------------
+        # TRANSCRIPTION COMPLETED
+        # -------------------------------------------------
+
         transcription_time = (
             time.perf_counter()
             - transcription_start
@@ -330,6 +389,12 @@ def transcribe_video(video_path):
         print(
             f"[WHISPER] Transcription completed "
             f"in {transcription_time:.2f}s",
+            flush=True
+        )
+
+        print(
+            f"[WHISPER] Total segments: "
+            f"{len(transcript_segments)}",
             flush=True
         )
 
@@ -343,6 +408,12 @@ def transcribe_video(video_path):
             if item["text"]
         ).strip()
 
+        print(
+            f"[WHISPER] Transcript characters: "
+            f"{len(full_text)}",
+            flush=True
+        )
+
         total_time = (
             time.perf_counter()
             - total_start
@@ -351,12 +422,6 @@ def transcribe_video(video_path):
         print(
             f"[WHISPER] Total transcription pipeline "
             f"completed in {total_time:.2f}s",
-            flush=True
-        )
-
-        print(
-            f"[WHISPER] Segments: "
-            f"{len(transcript_segments)}",
             flush=True
         )
 
@@ -374,10 +439,20 @@ def transcribe_video(video_path):
 
     finally:
 
-        if wav_path and os.path.exists(wav_path):
+        # -------------------------------------------------
+        # REMOVE TEMP WAV
+        # -------------------------------------------------
+
+        if (
+            wav_path
+            and os.path.exists(wav_path)
+        ):
 
             try:
-                os.remove(wav_path)
+
+                os.remove(
+                    wav_path
+                )
 
                 print(
                     "[WHISPER] Temporary WAV removed.",
@@ -392,6 +467,7 @@ def transcribe_video(video_path):
                     flush=True
                 )
 
+
 # =========================================================
 # CREATE JOB
 # =========================================================
@@ -402,6 +478,7 @@ def create_job(
     source="upload",
     source_url=""
 ):
+
     job_id = uuid.uuid4().hex
 
     job_data = {
@@ -420,6 +497,7 @@ def create_job(
     }
 
     if SUPABASE_CLIENT is None:
+
         raise RuntimeError(
             "Supabase is not configured."
         )
@@ -432,11 +510,13 @@ def create_job(
     )
 
     if not response.data:
+
         raise RuntimeError(
             "Could not create job in Supabase."
         )
+
     job_data = response.data[0]
-    
+
     worker = threading.Thread(
         target=temporary_worker,
         args=(job_id,),
@@ -445,7 +525,9 @@ def create_job(
 
     worker.start()
 
-    return public_job(job_data)
+    return public_job(
+        job_data
+    )
 
 
 # =========================================================
@@ -455,6 +537,7 @@ def create_job(
 def get_job(job_id):
 
     if SUPABASE_CLIENT is None:
+
         raise RuntimeError(
             "Supabase is not configured."
         )
@@ -468,11 +551,14 @@ def get_job(job_id):
     )
 
     if not response.data:
+
         return None
 
     job = response.data[0]
 
-    return public_job(job)
+    return public_job(
+        job
+    )
 
 
 # =========================================================
@@ -482,6 +568,7 @@ def get_job(job_id):
 def cancel_job(job_id):
 
     if SUPABASE_CLIENT is None:
+
         raise RuntimeError(
             "Supabase is not configured."
         )
@@ -495,6 +582,7 @@ def cancel_job(job_id):
     )
 
     if not response.data:
+
         return None
 
     job = response.data[0]
@@ -504,7 +592,10 @@ def cancel_job(job_id):
         "failed",
         "cancelled",
     ]:
-        return public_job(job)
+
+        return public_job(
+            job
+        )
 
     updates = {
         "cancel_requested": True,
@@ -522,6 +613,7 @@ def cancel_job(job_id):
     )
 
     if not update_response.data:
+
         return None
 
     return public_job(
@@ -542,7 +634,9 @@ def update_job(
     result=None,
     error=None,
 ):
+
     if SUPABASE_CLIENT is None:
+
         raise RuntimeError(
             "Supabase is not configured."
         )
@@ -552,21 +646,29 @@ def update_job(
     }
 
     if progress is not None:
-        updates["progress"] = int(progress)
+
+        updates["progress"] = int(
+            progress
+        )
 
     if stage is not None:
+
         updates["stage"] = stage
 
     if status is not None:
+
         updates["status"] = status
 
     if message is not None:
+
         updates["message"] = message
 
     if result is not None:
+
         updates["result"] = result
 
     if error is not None:
+
         updates["error"] = error
 
     response = (
@@ -578,9 +680,12 @@ def update_job(
     )
 
     if not response.data:
+
         return None
 
-    return public_job(response.data[0])
+    return public_job(
+        response.data[0]
+    )
 
 
 # =========================================================
@@ -590,6 +695,7 @@ def update_job(
 def is_cancel_requested(job_id):
 
     if SUPABASE_CLIENT is None:
+
         raise RuntimeError(
             "Supabase is not configured."
         )
@@ -603,6 +709,7 @@ def is_cancel_requested(job_id):
     )
 
     if not response.data:
+
         return True
 
     return bool(
@@ -626,14 +733,14 @@ def temporary_worker(job_id):
     Later stages are still temporary simulation.
     """
 
-    import time
-
     try:
+
         # -------------------------------------------------
         # GET JOB
         # -------------------------------------------------
 
         if SUPABASE_CLIENT is None:
+
             raise RuntimeError(
                 "Supabase is not configured."
             )
@@ -647,16 +754,20 @@ def temporary_worker(job_id):
         )
 
         if not response.data:
+
             return
 
-        video_path = response.data[0].get(
-            "video_path"
+        video_path = (
+            response.data[0]
+            .get("video_path")
         )
 
         if not video_path:
+
             raise RuntimeError(
                 "Video path is missing."
             )
+
         # -------------------------------------------------
         # 5% - UPLOADING VIDEO
         # -------------------------------------------------
@@ -669,7 +780,9 @@ def temporary_worker(job_id):
             message="Video upload completed.",
         )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -691,7 +804,9 @@ def temporary_worker(job_id):
             message="Transcribing video...",
         )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -712,18 +827,40 @@ def temporary_worker(job_id):
         response = (
             SUPABASE_CLIENT
             .table("jobs")
-            .update({
-                "transcript": transcript,
-                "updated_at": datetime.utcnow().isoformat(),
-            })
+            .update(
+                {
+                    "transcript": transcript,
+                    "updated_at": (
+                        datetime.utcnow()
+                        .isoformat()
+                    ),
+                }
+            )
             .eq("job_id", job_id)
             .execute()
         )
 
         if not response.data:
+
             raise RuntimeError(
                 "Could not save transcript."
             )
+
+        # -------------------------------------------------
+        # CHECK CANCEL AFTER TRANSCRIPTION
+        # -------------------------------------------------
+
+        if is_cancel_requested(
+            job_id
+        ):
+
+            update_job(
+                job_id,
+                status="cancelled",
+                message="Job cancelled.",
+            )
+
+            return
 
         # -------------------------------------------------
         # 30% - SCENE ANALYSING
@@ -737,9 +874,13 @@ def temporary_worker(job_id):
             message="Transcription completed.",
         )
 
-        time.sleep(0.8)
+        time.sleep(
+            0.8
+        )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -761,9 +902,13 @@ def temporary_worker(job_id):
             message="Scene analysis started.",
         )
 
-        time.sleep(0.8)
+        time.sleep(
+            0.8
+        )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -785,9 +930,13 @@ def temporary_worker(job_id):
             message="Generating recap.",
         )
 
-        time.sleep(0.8)
+        time.sleep(
+            0.8
+        )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -809,9 +958,13 @@ def temporary_worker(job_id):
             message="Translating recap to Myanmar.",
         )
 
-        time.sleep(0.8)
+        time.sleep(
+            0.8
+        )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -833,9 +986,13 @@ def temporary_worker(job_id):
             message="Generating voiceover.",
         )
 
-        time.sleep(0.8)
+        time.sleep(
+            0.8
+        )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -857,9 +1014,13 @@ def temporary_worker(job_id):
             message="Creating subtitles.",
         )
 
-        time.sleep(0.8)
+        time.sleep(
+            0.8
+        )
 
-        if is_cancel_requested(job_id):
+        if is_cancel_requested(
+            job_id
+        ):
 
             update_job(
                 job_id,
@@ -887,12 +1048,28 @@ def temporary_worker(job_id):
 
     except Exception as error:
 
-        update_job(
-            job_id,
-            status="failed",
-            message="Processing failed.",
-            error=str(error),
+        print(
+            f"[JOB] Job {job_id} failed: "
+            f"{error}",
+            flush=True
         )
+
+        try:
+
+            update_job(
+                job_id,
+                status="failed",
+                message="Processing failed.",
+                error=str(error),
+            )
+
+        except Exception as update_error:
+
+            print(
+                f"[JOB] Could not update failed job: "
+                f"{update_error}",
+                flush=True
+            )
 
 
 # =========================================================
