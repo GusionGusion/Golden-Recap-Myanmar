@@ -387,35 +387,34 @@ def temporary_worker(job_id):
     import time
 
     try:
-
         # -------------------------------------------------
         # GET JOB
         # -------------------------------------------------
 
         if SUPABASE_CLIENT is None:
-    raise RuntimeError(
-        "Supabase is not configured."
-    )
+            raise RuntimeError(
+                "Supabase is not configured."
+            )
 
-response = (
-    SUPABASE_CLIENT
-    .table("jobs")
-    .select("video_path")
-    .eq("job_id", job_id)
-    .execute()
-)
+        response = (
+            SUPABASE_CLIENT
+            .table("jobs")
+            .select("video_path")
+            .eq("job_id", job_id)
+            .execute()
+        )
 
-if not response.data:
-    return
+        if not response.data:
+            return
 
-video_path = response.data[0].get(
-    "video_path"
-)
+        video_path = response.data[0].get(
+            "video_path"
+        )
 
-if not video_path:
-    raise RuntimeError(
-        "Video path is missing."
-    )
+        if not video_path:
+            raise RuntimeError(
+                "Video path is missing."
+            )
         # -------------------------------------------------
         # 5% - UPLOADING VIDEO
         # -------------------------------------------------
