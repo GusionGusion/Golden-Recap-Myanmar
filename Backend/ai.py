@@ -1,13 +1,21 @@
 # =========================================================
-# Movie Recap AI - AI Gateway
-# ai.py
+# Golden Recap MM - AI Gateway
+# Backend/ai.py
 # =========================================================
 
 import os
 import json
 import time
 import re
-from typing import Optional, Dict, Any, List
+import base64
+
+from typing import (
+    Optional,
+    Dict,
+    Any,
+    List,
+)
+
 
 # =========================================================
 # OPTIONAL AI CLIENTS
@@ -19,6 +27,7 @@ try:
 except Exception:
     genai = None
     types = None
+
 
 try:
     from openai import OpenAI
@@ -32,20 +41,24 @@ except Exception:
 
 DEFAULT_GEMINI_MODEL = os.getenv(
     "GEMINI_MODEL",
-    "gemini-3.8-flash"
+    "gemini-3.8-flash",
 )
+
 
 DEFAULT_OPENAI_MODEL = os.getenv(
     "OPENAI_MODEL",
-    "gpt-6-luna"
+    "gpt-6-luna",
 )
+
 
 DEFAULT_OPENROUTER_MODEL = os.getenv(
     "OPENROUTER_MODEL",
-    "openai/gpt-6-luna"
+    "openai/gpt-6-luna",
 )
 
+
 MAX_RETRIES = 3
+
 
 OPENROUTER_BASE_URL = (
     "https://openrouter.ai/api/v1"
@@ -58,198 +71,55 @@ OPENROUTER_BASE_URL = (
 
 AI_MODE = os.getenv(
     "AI_MODE",
-    "production"
+    "production",
 ).lower().strip()
 
 
-# ---------------------------------------------------------
-# TEXT TASKS
-# ---------------------------------------------------------
+# =========================================================
+# TEXT TASK CONFIG
+# =========================================================
 
 TRANSLATION_PROVIDER = os.getenv(
     "TRANSLATION_PROVIDER",
-    "openrouter"
-)
+    "openrouter",
+).lower().strip()
+
 
 TRANSLATION_MODEL = os.getenv(
     "TRANSLATION_MODEL",
-    "openai/gpt-6-luna"
+    "openai/gpt-6-luna",
 )
+
 
 CAPTION_PROVIDER = os.getenv(
     "CAPTION_PROVIDER",
-    "openrouter"
-)
+    "openrouter",
+).lower().strip()
+
 
 CAPTION_MODEL = os.getenv(
     "CAPTION_MODEL",
-    "openai/gpt-6-luna"
+    "openai/gpt-6-luna",
 )
 
 
-# ---------------------------------------------------------
-# SCENE ANALYSIS
-# ---------------------------------------------------------
+# =========================================================
+# SCENE ANALYSIS CONFIG
+# =========================================================
 
 SCENE_PRIMARY_PROVIDER = "gemini"
 
+
 SCENE_PRIMARY_MODEL = DEFAULT_GEMINI_MODEL
+
 
 SCENE_FALLBACK_PROVIDER = "openrouter"
 
-SCENE_FALLBACK_MODEL = "openai/gpt-6-luna"
 
-    # -----------------------------------------------------
-    # ENGLISH RECAP
-    # -----------------------------------------------------
+SCENE_FALLBACK_MODEL = (
+    "openai/gpt-6-luna"
+)
 
-    if task in [
-        "recap",
-        "english_recap",
-        "movie_recap",
-        "animal_recap",
-    ]:
-        return gemini_text(
-            prompt,
-            model=DEFAULT_GEMINI_MODEL,
-            system_instruction=system_instruction,
-        )
-
-    # -----------------------------------------------------
-    # TRANSLATION
-    # -----------------------------------------------------
-
-    if task in [
-        "translation",
-        "translate",
-        "myanmar_translation",
-    ]:
-
-        if AI_MODE == "production":
-
-            provider = PROD_TRANSLATION_PROVIDER
-            model = PROD_TRANSLATION_MODEL
-
-        else:
-
-            provider = DEV_TRANSLATION_PROVIDER
-            model = DEV_TRANSLATION_MODEL
-
-        if provider == "openrouter":
-
-            return openrouter_text(
-                prompt,
-                model=model,
-            )
-
-        if provider == "openai":
-
-            return openai_text(
-                prompt,
-                model=model,
-            )
-
-        return gemini_text(
-            prompt,
-            model=model,
-            system_instruction=system_instruction,
-        )
-
-    # -----------------------------------------------------
-    # CAPTION
-    # -----------------------------------------------------
-
-    if task in [
-        "caption",
-        "social_caption",
-        "post_caption",
-    ]:
-
-        if AI_MODE == "production":
-
-            provider = PROD_CAPTION_PROVIDER
-            model = PROD_CAPTION_MODEL
-
-        else:
-
-            provider = DEV_CAPTION_PROVIDER
-            model = DEV_CAPTION_MODEL
-
-        if provider == "openrouter":
-
-            return openrouter_text(
-                prompt,
-                model=model,
-            )
-
-        if provider == "openai":
-
-            return openai_text(
-                prompt,
-                model=model,
-            )
-
-        return gemini_text(
-            prompt,
-            model=model,
-            system_instruction=system_instruction,
-        )
-
-    # -----------------------------------------------------
-    # FALLBACK
-    # -----------------------------------------------------
-
-    return gemini_text(
-        prompt,
-        model=DEFAULT_GEMINI_MODEL,
-        system_instruction=system_instruction,
-    )
-
-# =========================================================
-# GOLDEN RECAP MM - VISION ROUTER
-# =========================================================
-
-def router_vision(
-    task,
-    prompt,
-    image_bytes,
-    mime_type="image/jpeg",
-    system_instruction=None,
-):
-    """
-    Route vision tasks by task name.
-
-    Scene analysis is routed to Gemini Vision.
-    Other vision tasks can be added later.
-    """
-
-    task = str(task or "").lower().strip()
-
-    # -----------------------------------------------------
-    # SCENE ANALYSIS
-    # -----------------------------------------------------
-
-    if task in [
-        "scene",
-        "scene_analysis",
-        "movie_scene",
-        "animal_scene",
-    ]:
-        return generate_vision(
-            prompt=prompt,
-            image_bytes=image_bytes,
-            mime_type=mime_type,
-        )
-
-    # -----------------------------------------------------
-    # FALLBACK
-    # -----------------------------------------------------
-
-    return generate_vision(
-        prompt=prompt,
-        image_bytes=image_bytes,
-        mime_type=mime_type,
-    )
 
 # =========================================================
 # API KEY HELPERS
@@ -257,11 +127,13 @@ def router_vision(
 
 def get_env_or_secret(
     name: str,
-    default: str = ""
+    default: str = "",
 ) -> str:
     """
-    Get API key from environment first.
-    Then try Streamlit secrets.
+    Get a value from environment variables first.
+
+    If unavailable, try Streamlit secrets for
+    backward compatibility with the old app.
     """
 
     value = os.getenv(name)
@@ -270,16 +142,20 @@ def get_env_or_secret(
         return value.strip()
 
     try:
+
         import streamlit as st
 
         try:
+
             value = st.secrets.get(
                 name,
-                ""
+                "",
             )
 
             if value:
-                return str(value).strip()
+                return str(
+                    value
+                ).strip()
 
         except Exception:
             pass
@@ -291,25 +167,28 @@ def get_env_or_secret(
 
 
 def get_gemini_api_key() -> str:
+
     return get_env_or_secret(
-        "GEMINI_API_KEY"
+        "GEMINI_API_KEY",
     )
 
 
 def get_openai_api_key() -> str:
+
     return get_env_or_secret(
-        "OPENAI_API_KEY"
+        "OPENAI_API_KEY",
     )
 
 
 def get_openrouter_api_key() -> str:
+
     return get_env_or_secret(
-        "OPENROUTER_API_KEY"
+        "OPENROUTER_API_KEY",
     )
 
 
 # =========================================================
-# AI PROVIDER STATUS
+# PROVIDER STATUS
 # =========================================================
 
 def get_provider_status() -> Dict[str, bool]:
@@ -318,9 +197,11 @@ def get_provider_status() -> Dict[str, bool]:
         "gemini": bool(
             get_gemini_api_key()
         ),
+
         "openai": bool(
             get_openai_api_key()
         ),
+
         "openrouter": bool(
             get_openrouter_api_key()
         ),
@@ -332,7 +213,7 @@ def get_provider_status() -> Dict[str, bool]:
 # =========================================================
 
 def clean_ai_text(
-    text: Any
+    text: Any,
 ) -> str:
 
     if text is None:
@@ -342,12 +223,12 @@ def clean_ai_text(
 
     text = text.replace(
         "\r\n",
-        "\n"
+        "\n",
     )
 
     text = text.replace(
         "\r",
-        "\n"
+        "\n",
     )
 
     # Remove accidental markdown fences
@@ -355,12 +236,12 @@ def clean_ai_text(
         r"```(?:text|markdown)?",
         "",
         text,
-        flags=re.IGNORECASE
+        flags=re.IGNORECASE,
     )
 
     text = text.replace(
         "```",
-        ""
+        "",
     )
 
     return text.strip()
@@ -373,6 +254,7 @@ def clean_ai_text(
 def get_gemini_client():
 
     if genai is None:
+
         raise RuntimeError(
             "Google GenAI package is not installed."
         )
@@ -380,12 +262,13 @@ def get_gemini_client():
     api_key = get_gemini_api_key()
 
     if not api_key:
+
         raise RuntimeError(
             "GEMINI_API_KEY is not configured."
         )
 
     return genai.Client(
-        api_key=api_key
+        api_key=api_key,
     )
 
 
@@ -398,7 +281,17 @@ def gemini_text(
     model: Optional[str] = None,
     temperature: float = 0.4,
     max_retries: int = MAX_RETRIES,
+    system_instruction: Optional[str] = None,
 ) -> str:
+    """
+    Gemini text generation.
+
+    Gemini 3.8 Flash is the default model.
+
+    temperature is retained in the function signature
+    for backward compatibility with old callers, but is
+    intentionally not sent to Gemini 3.8 GenerateContentConfig.
+    """
 
     client = get_gemini_client()
 
@@ -415,25 +308,36 @@ def gemini_text(
 
         try:
 
+            config_kwargs = {}
+
+            if system_instruction:
+
+                config_kwargs[
+                    "system_instruction"
+                ] = system_instruction
+
+            config = (
+                types.GenerateContentConfig(
+                    **config_kwargs
+                )
+            )
+
             response = (
                 client.models.generate_content(
                     model=model,
                     contents=prompt,
-                    config=(
-                        types.GenerateContentConfig(
-                            temperature=temperature
-                        )
-                    ),
+                    config=config,
                 )
             )
 
             text = getattr(
                 response,
                 "text",
-                None
+                None,
             )
 
             if text:
+
                 return clean_ai_text(
                     text
                 )
@@ -442,9 +346,9 @@ def gemini_text(
                 "Gemini returned an empty response."
             )
 
-        except Exception as e:
+        except Exception as error:
 
-            last_error = e
+            last_error = error
 
             if (
                 attempt
@@ -461,41 +365,7 @@ def gemini_text(
         f"{max_retries} attempts: "
         f"{last_error}"
     )
-    
-# =========================================================
-# BACKWARD COMPATIBILITY
-# =========================================================
 
-def ai_text(
-    prompt: str,
-    workflow: str = "Gemini",
-    model: Optional[str] = None,
-) -> str:
-
-    workflow = (workflow or "").lower().strip()
-
-    # OpenRouter → Text generation
-    if "openrouter" in workflow:
-        provider = "openrouter"
-
-    # Hybrid → OpenRouter for text
-    elif "hybrid" in workflow:
-        provider = "openrouter"
-
-    # OpenAI Only
-    elif "openai" in workflow:
-        provider = "openai"
-
-    # Gemini Only
-    else:
-        provider = "gemini"
-
-    return generate_text(
-        prompt=prompt,
-        provider=provider,
-        model=model,
-        temperature=0.4,
-    )
 
 # =========================================================
 # GEMINI VISION
@@ -508,7 +378,16 @@ def gemini_vision(
     model: Optional[str] = None,
     temperature: float = 0.2,
     max_retries: int = MAX_RETRIES,
+    system_instruction: Optional[str] = None,
 ) -> str:
+    """
+    Gemini vision generation.
+
+    Gemini 3.8 Flash is the default vision model.
+
+    temperature is retained for backward compatibility
+    but is not passed into Gemini 3.8 configuration.
+    """
 
     client = get_gemini_client()
 
@@ -532,6 +411,20 @@ def gemini_vision(
                 )
             )
 
+            config_kwargs = {}
+
+            if system_instruction:
+
+                config_kwargs[
+                    "system_instruction"
+                ] = system_instruction
+
+            config = (
+                types.GenerateContentConfig(
+                    **config_kwargs
+                )
+            )
+
             response = (
                 client.models.generate_content(
                     model=model,
@@ -539,21 +432,18 @@ def gemini_vision(
                         prompt,
                         image_part,
                     ],
-                    config=(
-                        types.GenerateContentConfig(
-                            temperature=temperature
-                        )
-                    ),
+                    config=config,
                 )
             )
 
             text = getattr(
                 response,
                 "text",
-                None
+                None,
             )
 
             if text:
+
                 return clean_ai_text(
                     text
                 )
@@ -563,9 +453,9 @@ def gemini_vision(
                 "an empty response."
             )
 
-        except Exception as e:
+        except Exception as error:
 
-            last_error = e
+            last_error = error
 
             if (
                 attempt
@@ -591,6 +481,7 @@ def gemini_vision(
 def get_openai_client():
 
     if OpenAI is None:
+
         raise RuntimeError(
             "OpenAI package is not installed."
         )
@@ -598,12 +489,13 @@ def get_openai_client():
     api_key = get_openai_api_key()
 
     if not api_key:
+
         raise RuntimeError(
             "OPENAI_API_KEY is not configured."
         )
 
     return OpenAI(
-        api_key=api_key
+        api_key=api_key,
     )
 
 
@@ -637,6 +529,12 @@ def openai_text(
         )
     )
 
+    if not response.choices:
+
+        raise RuntimeError(
+            "OpenAI returned no choices."
+        )
+
     text = (
         response
         .choices[0]
@@ -656,6 +554,7 @@ def openai_text(
 def get_openrouter_client():
 
     if OpenAI is None:
+
         raise RuntimeError(
             "OpenAI package is required "
             "for OpenRouter."
@@ -664,6 +563,7 @@ def get_openrouter_client():
     api_key = get_openrouter_api_key()
 
     if not api_key:
+
         raise RuntimeError(
             "OPENROUTER_API_KEY is not configured."
         )
@@ -705,6 +605,7 @@ def openrouter_text(
     )
 
     if not response.choices:
+
         raise RuntimeError(
             "OpenRouter returned no choices."
         )
@@ -740,12 +641,12 @@ def openrouter_vision(
         or DEFAULT_OPENROUTER_MODEL
     )
 
-    import base64
-
     encoded_image = (
         base64.b64encode(
             image_bytes
-        ).decode("utf-8")
+        ).decode(
+            "utf-8"
+        )
     )
 
     image_url = (
@@ -767,7 +668,7 @@ def openrouter_vision(
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": image_url
+                                "url": image_url,
                             },
                         },
                     ],
@@ -778,6 +679,7 @@ def openrouter_vision(
     )
 
     if not response.choices:
+
         raise RuntimeError(
             "OpenRouter Vision returned "
             "no choices."
@@ -796,6 +698,322 @@ def openrouter_vision(
 
 
 # =========================================================
+# GOLDEN RECAP MM - TEXT ROUTER
+# =========================================================
+
+def router_text(
+    task,
+    prompt,
+    system_instruction=None,
+):
+    """
+    Golden Recap MM text AI router.
+
+    Scene Analysis:
+        Gemini 3.8 Flash
+        -> GPT-6 Luna only if Gemini fails
+
+    English Recap:
+        GPT-6 Luna
+
+    Myanmar Translation:
+        GPT-6 Luna
+
+    Caption:
+        GPT-6 Luna
+    """
+
+    task = str(
+        task or ""
+    ).lower().strip()
+
+
+    # =====================================================
+    # SCENE ANALYSIS
+    # =====================================================
+
+    if task in [
+        "scene",
+        "scene_analysis",
+        "movie_scene",
+        "animal_scene",
+    ]:
+
+        try:
+
+            return gemini_text(
+                prompt=prompt,
+                model=SCENE_PRIMARY_MODEL,
+                system_instruction=system_instruction,
+                max_retries=1,
+            )
+
+        except Exception as gemini_error:
+
+            try:
+
+                return openrouter_text(
+                    prompt=prompt,
+                    model=SCENE_FALLBACK_MODEL,
+                )
+
+            except Exception as fallback_error:
+
+                raise RuntimeError(
+                    "Scene Analysis failed. "
+                    f"Gemini error: "
+                    f"{gemini_error}. "
+                    f"GPT-6 Luna fallback error: "
+                    f"{fallback_error}"
+                )
+
+
+    # =====================================================
+    # ENGLISH RECAP
+    # =====================================================
+
+    if task in [
+        "recap",
+        "english_recap",
+        "movie_recap",
+        "animal_recap",
+    ]:
+
+        return openrouter_text(
+            prompt=prompt,
+            model="openai/gpt-6-luna",
+        )
+
+
+    # =====================================================
+    # TRANSLATION
+    # =====================================================
+
+    if task in [
+        "translation",
+        "translate",
+        "myanmar_translation",
+    ]:
+
+        if (
+            TRANSLATION_PROVIDER
+            == "openrouter"
+        ):
+
+            return openrouter_text(
+                prompt=prompt,
+                model=TRANSLATION_MODEL,
+            )
+
+        if (
+            TRANSLATION_PROVIDER
+            == "openai"
+        ):
+
+            return openai_text(
+                prompt=prompt,
+                model=TRANSLATION_MODEL,
+            )
+
+        return gemini_text(
+            prompt=prompt,
+            model=TRANSLATION_MODEL,
+            system_instruction=system_instruction,
+        )
+
+
+    # =====================================================
+    # CAPTION
+    # =====================================================
+
+    if task in [
+        "caption",
+        "social_caption",
+        "post_caption",
+    ]:
+
+        if (
+            CAPTION_PROVIDER
+            == "openrouter"
+        ):
+
+            return openrouter_text(
+                prompt=prompt,
+                model=CAPTION_MODEL,
+            )
+
+        if (
+            CAPTION_PROVIDER
+            == "openai"
+        ):
+
+            return openai_text(
+                prompt=prompt,
+                model=CAPTION_MODEL,
+            )
+
+        return gemini_text(
+            prompt=prompt,
+            model=CAPTION_MODEL,
+            system_instruction=system_instruction,
+        )
+
+
+    # =====================================================
+    # DEFAULT
+    # =====================================================
+
+    return openrouter_text(
+        prompt=prompt,
+        model=DEFAULT_OPENROUTER_MODEL,
+    )
+
+
+# =========================================================
+# GOLDEN RECAP MM - VISION ROUTER
+# =========================================================
+
+def router_vision(
+    task,
+    prompt,
+    image_bytes,
+    mime_type="image/jpeg",
+    system_instruction=None,
+):
+    """
+    Scene vision routing.
+
+    Primary:
+        Gemini 3.8 Flash
+
+    Fallback:
+        GPT-6 Luna through OpenRouter
+    """
+
+    task = str(
+        task or ""
+    ).lower().strip()
+
+
+    # =====================================================
+    # SCENE ANALYSIS
+    # =====================================================
+
+    if task in [
+        "scene",
+        "scene_analysis",
+        "movie_scene",
+        "animal_scene",
+    ]:
+
+        try:
+
+            return gemini_vision(
+                prompt=prompt,
+                image_bytes=image_bytes,
+                mime_type=mime_type,
+                model=SCENE_PRIMARY_MODEL,
+                max_retries=1,
+                system_instruction=system_instruction,
+            )
+
+        except Exception as gemini_error:
+
+            try:
+
+                return openrouter_vision(
+                    prompt=prompt,
+                    image_bytes=image_bytes,
+                    mime_type=mime_type,
+                    model=SCENE_FALLBACK_MODEL,
+                )
+
+            except Exception as fallback_error:
+
+                raise RuntimeError(
+                    "Scene Vision failed. "
+                    f"Gemini error: "
+                    f"{gemini_error}. "
+                    f"GPT-6 Luna fallback error: "
+                    f"{fallback_error}"
+                )
+
+
+    # =====================================================
+    # DEFAULT VISION
+    # =====================================================
+
+    return gemini_vision(
+        prompt=prompt,
+        image_bytes=image_bytes,
+        mime_type=mime_type,
+        model=SCENE_PRIMARY_MODEL,
+        max_retries=1,
+        system_instruction=system_instruction,
+    )
+
+
+# =========================================================
+# BACKWARD COMPATIBILITY - AI TEXT
+# =========================================================
+
+def ai_text(
+    prompt: str,
+    workflow: str = "Gemini",
+    model: Optional[str] = None,
+) -> str:
+
+    workflow = (
+        workflow
+        or ""
+    ).lower().strip()
+
+
+    # -----------------------------------------------------
+    # OpenRouter
+    # -----------------------------------------------------
+
+    if "openrouter" in workflow:
+
+        provider = "openrouter"
+
+
+    # -----------------------------------------------------
+    # Hybrid
+    # -----------------------------------------------------
+
+    elif "hybrid" in workflow:
+
+        provider = "openrouter"
+
+
+    # -----------------------------------------------------
+    # OpenAI
+    # -----------------------------------------------------
+
+    elif "openai" in workflow:
+
+        provider = "openai"
+
+
+    # -----------------------------------------------------
+    # Gemini
+    # -----------------------------------------------------
+
+    else:
+
+        provider = "gemini"
+
+
+    return generate_text(
+        prompt=prompt,
+        provider=provider,
+        model=model,
+        temperature=0.4,
+    )
+
+
+# =========================================================
 # UNIVERSAL TEXT AI
 # =========================================================
 
@@ -804,13 +1022,18 @@ def generate_text(
     provider: str = "gemini",
     model: Optional[str] = None,
     temperature: float = 0.4,
+    system_instruction: Optional[str] = None,
 ) -> str:
 
     provider = (
         provider
-        .lower()
-        .strip()
-    )
+        or ""
+    ).lower().strip()
+
+
+    # -----------------------------------------------------
+    # GEMINI
+    # -----------------------------------------------------
 
     if provider == "gemini":
 
@@ -818,7 +1041,13 @@ def generate_text(
             prompt=prompt,
             model=model,
             temperature=temperature,
+            system_instruction=system_instruction,
         )
+
+
+    # -----------------------------------------------------
+    # OPENAI
+    # -----------------------------------------------------
 
     if provider == "openai":
 
@@ -828,6 +1057,11 @@ def generate_text(
             temperature=temperature,
         )
 
+
+    # -----------------------------------------------------
+    # OPENROUTER
+    # -----------------------------------------------------
+
     if provider == "openrouter":
 
         return openrouter_text(
@@ -836,8 +1070,9 @@ def generate_text(
             temperature=temperature,
         )
 
+
     raise ValueError(
-        f"Unsupported AI provider: "
+        "Unsupported AI provider: "
         f"{provider}"
     )
 
@@ -853,13 +1088,14 @@ def generate_vision(
     provider: str = "gemini",
     model: Optional[str] = None,
     temperature: float = 0.2,
+    system_instruction: Optional[str] = None,
 ) -> str:
 
     provider = (
         provider
-        .lower()
-        .strip()
-    )
+        or ""
+    ).lower().strip()
+
 
     # -----------------------------------------------------
     # Compatibility:
@@ -874,7 +1110,9 @@ def generate_vision(
     }:
 
         provider = mime_type
+
         mime_type = "image/jpeg"
+
 
     # -----------------------------------------------------
     # GEMINI VISION
@@ -888,7 +1126,9 @@ def generate_vision(
             mime_type=mime_type,
             model=model,
             temperature=temperature,
+            system_instruction=system_instruction,
         )
+
 
     # -----------------------------------------------------
     # OPENROUTER VISION
@@ -904,8 +1144,9 @@ def generate_vision(
             temperature=temperature,
         )
 
+
     raise ValueError(
-        f"Vision provider "
+        "Vision provider "
         f"'{provider}' is not implemented yet."
     )
 
@@ -947,7 +1188,7 @@ Rules:
 
 
 def english_recap_prompt(
-    scene_analysis: str
+    scene_analysis: str,
 ) -> str:
 
     return f"""
@@ -970,7 +1211,7 @@ Rules:
 
 
 def myanmar_translation_prompt(
-    english_recap: str
+    english_recap: str,
 ) -> str:
 
     return f"""
@@ -997,7 +1238,7 @@ Rules:
 
 
 def caption_prompt(
-    myanmar_recap: str
+    myanmar_recap: str,
 ) -> str:
 
     return f"""
@@ -1026,7 +1267,7 @@ Rules:
 
 def generate_recap_script(
     scene_analysis: str,
-    provider: str = "gemini",
+    provider: str = "openrouter",
 ) -> str:
 
     prompt = english_recap_prompt(
@@ -1036,13 +1277,18 @@ def generate_recap_script(
     return generate_text(
         prompt,
         provider=provider,
+        model=(
+            "openai/gpt-6-luna"
+            if provider == "openrouter"
+            else None
+        ),
         temperature=0.4,
     )
 
 
 def translate_recap_to_myanmar(
     english_recap: str,
-    provider: str = "gemini",
+    provider: str = "openrouter",
 ) -> str:
 
     prompt = myanmar_translation_prompt(
@@ -1052,13 +1298,18 @@ def translate_recap_to_myanmar(
     return generate_text(
         prompt,
         provider=provider,
+        model=(
+            "openai/gpt-6-luna"
+            if provider == "openrouter"
+            else None
+        ),
         temperature=0.3,
     )
 
 
 def generate_social_caption(
     myanmar_recap: str,
-    provider: str = "gemini",
+    provider: str = "openrouter",
 ) -> str:
 
     prompt = caption_prompt(
@@ -1068,6 +1319,11 @@ def generate_social_caption(
     return generate_text(
         prompt,
         provider=provider,
+        model=(
+            "openai/gpt-6-luna"
+            if provider == "openrouter"
+            else None
+        ),
         temperature=0.5,
     )
 
@@ -1110,7 +1366,7 @@ Rules:
 
 
 def animal_recap_prompt(
-    scene_analysis: str
+    scene_analysis: str,
 ) -> str:
 
     return f"""
@@ -1135,7 +1391,7 @@ Rules:
 
 
 def animal_myanmar_prompt(
-    english_recap: str
+    english_recap: str,
 ) -> str:
 
     return f"""
@@ -1159,7 +1415,53 @@ Rules:
 
 
 # =========================================================
-# HEALTH CHECK
+# HIGH-LEVEL ANIMAL FUNCTIONS
+# =========================================================
+
+def generate_animal_recap_script(
+    scene_analysis: str,
+    provider: str = "openrouter",
+) -> str:
+
+    prompt = animal_recap_prompt(
+        scene_analysis
+    )
+
+    return generate_text(
+        prompt,
+        provider=provider,
+        model=(
+            "openai/gpt-6-luna"
+            if provider == "openrouter"
+            else None
+        ),
+        temperature=0.4,
+    )
+
+
+def translate_animal_recap_to_myanmar(
+    english_recap: str,
+    provider: str = "openrouter",
+) -> str:
+
+    prompt = animal_myanmar_prompt(
+        english_recap
+    )
+
+    return generate_text(
+        prompt,
+        provider=provider,
+        model=(
+            "openai/gpt-6-luna"
+            if provider == "openrouter"
+            else None
+        ),
+        temperature=0.3,
+    )
+
+
+# =========================================================
+# AI HEALTH CHECK
 # =========================================================
 
 def ai_health_check() -> Dict[str, Any]:
@@ -1168,11 +1470,41 @@ def ai_health_check() -> Dict[str, Any]:
 
     return {
         "status": "ok",
+
         "providers": status,
-        "gemini_model": DEFAULT_GEMINI_MODEL,
-        "openai_model": DEFAULT_OPENAI_MODEL,
+
+        "gemini_model":
+            DEFAULT_GEMINI_MODEL,
+
+        "openai_model":
+            DEFAULT_OPENAI_MODEL,
+
         "openrouter_model":
             DEFAULT_OPENROUTER_MODEL,
+
+        "scene_primary":
+            (
+                SCENE_PRIMARY_PROVIDER,
+                SCENE_PRIMARY_MODEL,
+            ),
+
+        "scene_fallback":
+            (
+                SCENE_FALLBACK_PROVIDER,
+                SCENE_FALLBACK_MODEL,
+            ),
+
+        "translation":
+            (
+                TRANSLATION_PROVIDER,
+                TRANSLATION_MODEL,
+            ),
+
+        "caption":
+            (
+                CAPTION_PROVIDER,
+                CAPTION_MODEL,
+            ),
     }
 
 
@@ -1181,30 +1513,50 @@ def ai_health_check() -> Dict[str, Any]:
 # =========================================================
 
 __all__ = [
+
+    # Provider status
     "get_provider_status",
     "ai_health_check",
 
+    # Gemini
     "gemini_text",
     "gemini_vision",
 
+    # OpenAI
     "openai_text",
+
+    # OpenRouter
     "openrouter_text",
     "openrouter_vision",
 
+    # Routers
+    "router_text",
+    "router_vision",
+
+    # Universal
     "generate_text",
     "generate_vision",
+
+    # Backward compatibility
     "ai_text",
 
+    # Movie recap
     "generate_recap_script",
     "translate_recap_to_myanmar",
     "generate_social_caption",
 
+    # Movie prompts
     "scene_analysis_prompt",
     "english_recap_prompt",
     "myanmar_translation_prompt",
     "caption_prompt",
 
+    # Animal prompts
     "animal_scene_prompt",
     "animal_recap_prompt",
     "animal_myanmar_prompt",
+
+    # Animal high-level functions
+    "generate_animal_recap_script",
+    "translate_animal_recap_to_myanmar",
 ]
