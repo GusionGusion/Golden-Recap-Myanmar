@@ -194,7 +194,8 @@ def create_job(
         raise RuntimeError(
             "Could not create job in Supabase."
         )
-
+    job_data = response.data[0]
+    
     worker = threading.Thread(
         target=temporary_worker,
         args=(job_id,),
