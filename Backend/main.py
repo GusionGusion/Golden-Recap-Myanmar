@@ -81,7 +81,7 @@ async def test_ai():
                 "Golden Recap MM Gemini test successful."
             ),
             model="gemini-3.8-flash",
-            max_retries=1,
+            max_retries=4,
         )
 
         return {
