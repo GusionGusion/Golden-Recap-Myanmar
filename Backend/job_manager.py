@@ -163,9 +163,7 @@ def create_job(
 ):
     job_id = uuid.uuid4().hex
 
-    now = datetime.utcnow().isoformat()
-
-    job = {
+    job_data = {
         "job_id": job_id,
         "status": "queued",
         "progress": 5,
@@ -177,13 +175,25 @@ def create_job(
         "settings": settings or {},
         "result": None,
         "error": None,
-        "created_at": now,
-        "updated_at": now,
         "cancel_requested": False,
     }
 
-    with JOBS_LOCK:
-        JOBS[job_id] = job
+    if SUPABASE_CLIENT is None:
+        raise RuntimeError(
+            "Supabase is not configured."
+        )
+
+    response = (
+        SUPABASE_CLIENT
+        .table("jobs")
+        .insert(job_data)
+        .execute()
+    )
+
+    if not response.data:
+        raise RuntimeError(
+            "Could not create job in Supabase."
+        )
 
     worker = threading.Thread(
         target=temporary_worker,
@@ -193,7 +203,7 @@ def create_job(
 
     worker.start()
 
-    return public_job(job)
+    return public_job(job_data)
 
 
 # =========================================================
