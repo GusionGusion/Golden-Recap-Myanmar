@@ -1,14 +1,12 @@
 import threading
 import uuid
 from datetime import datetime
-from ai import router_text
-# =========================================================
-# GOLDEN RECAP MM - WHISPER
-# =========================================================
-
 import os
 import subprocess
 import tempfile
+
+from ai import router_text
+from supabase import create_client
 
 from faster_whisper import WhisperModel
 # =========================================================
@@ -31,6 +29,26 @@ Golden Recap MM AI Router connection test successful.
 # GOLDEN RECAP MM
 # JOB MANAGER
 # =========================================================
+SUPABASE_URL = os.getenv(
+    "SUPABASE_URL",
+    ""
+)
+
+SUPABASE_SERVICE_ROLE_KEY = os.getenv(
+    "SUPABASE_SERVICE_ROLE_KEY",
+    ""
+)
+
+SUPABASE_CLIENT = None
+
+if (
+    SUPABASE_URL
+    and SUPABASE_SERVICE_ROLE_KEY
+):
+    SUPABASE_CLIENT = create_client(
+        SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY,
+    )
 
 JOBS = {}
 
