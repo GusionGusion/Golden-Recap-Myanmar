@@ -347,19 +347,28 @@ def update_job(
 
 def is_cancel_requested(job_id):
 
-    with JOBS_LOCK:
-
-        job = JOBS.get(job_id)
-
-        if job is None:
-            return True
-
-        return bool(
-            job.get(
-                "cancel_requested",
-                False,
-            )
+    if SUPABASE_CLIENT is None:
+        raise RuntimeError(
+            "Supabase is not configured."
         )
+
+    response = (
+        SUPABASE_CLIENT
+        .table("jobs")
+        .select("cancel_requested")
+        .eq("job_id", job_id)
+        .execute()
+    )
+
+    if not response.data:
+        return True
+
+    return bool(
+        response.data[0].get(
+            "cancel_requested",
+            False,
+        )
+    )
 
 
 # =========================================================
