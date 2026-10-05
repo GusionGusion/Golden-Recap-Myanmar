@@ -468,12 +468,21 @@ if not video_path:
         # STORE TRANSCRIPT INTERNALLY
         # -------------------------------------------------
 
-        with JOBS_LOCK:
+        response = (
+    SUPABASE_CLIENT
+    .table("jobs")
+    .update({
+        "transcript": transcript,
+        "updated_at": datetime.utcnow().isoformat(),
+    })
+    .eq("job_id", job_id)
+    .execute()
+)
 
-            job = JOBS.get(job_id)
-
-            if job is not None:
-                job["transcript"] = transcript
+if not response.data:
+    raise RuntimeError(
+        "Could not save transcript."
+    )
 
         # -------------------------------------------------
         # 30% - SCENE ANALYSING
