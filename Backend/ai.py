@@ -32,18 +32,17 @@ except Exception:
 
 DEFAULT_GEMINI_MODEL = os.getenv(
     "GEMINI_MODEL",
-    "gemini-3.6-flash"
+    "gemini-3.8-flash"
 )
 
 DEFAULT_OPENAI_MODEL = os.getenv(
     "OPENAI_MODEL",
-    "gpt-4o-mini"
+    "gpt-6-luna"
 )
 
-# OpenRouter Free Router
 DEFAULT_OPENROUTER_MODEL = os.getenv(
     "OPENROUTER_MODEL",
-    "openrouter/free"
+    "openai/gpt-6-luna"
 )
 
 MAX_RETRIES = 3
@@ -51,103 +50,54 @@ MAX_RETRIES = 3
 OPENROUTER_BASE_URL = (
     "https://openrouter.ai/api/v1"
 )
+
+
 # =========================================================
 # GOLDEN RECAP MM - AI ROUTER CONFIG
 # =========================================================
 
 AI_MODE = os.getenv(
     "AI_MODE",
-    "dev"
+    "production"
 ).lower().strip()
 
+
 # ---------------------------------------------------------
-# DEV / FREE TEST
+# TEXT TASKS
 # ---------------------------------------------------------
 
-DEV_TRANSLATION_PROVIDER = os.getenv(
-    "DEV_TRANSLATION_PROVIDER",
+TRANSLATION_PROVIDER = os.getenv(
+    "TRANSLATION_PROVIDER",
     "openrouter"
 )
 
-DEV_TRANSLATION_MODEL = os.getenv(
-    "DEV_TRANSLATION_MODEL",
-    "google/gemma-4-26b-a4b-it:free"
+TRANSLATION_MODEL = os.getenv(
+    "TRANSLATION_MODEL",
+    "openai/gpt-6-luna"
 )
 
-DEV_CAPTION_PROVIDER = os.getenv(
-    "DEV_CAPTION_PROVIDER",
+CAPTION_PROVIDER = os.getenv(
+    "CAPTION_PROVIDER",
     "openrouter"
 )
 
-DEV_CAPTION_MODEL = os.getenv(
-    "DEV_CAPTION_MODEL",
-    "google/gemma-4-26b-a4b-it:free"
+CAPTION_MODEL = os.getenv(
+    "CAPTION_MODEL",
+    "openai/gpt-6-luna"
 )
-
 
 
 # ---------------------------------------------------------
-# PRODUCTION
+# SCENE ANALYSIS
 # ---------------------------------------------------------
 
-PROD_TRANSLATION_PROVIDER = os.getenv(
-    "PROD_TRANSLATION_PROVIDER",
-    "gemini"
-)
+SCENE_PRIMARY_PROVIDER = "gemini"
 
-PROD_TRANSLATION_MODEL = os.getenv(
-    "PROD_TRANSLATION_MODEL",
-    DEFAULT_GEMINI_MODEL
-)
+SCENE_PRIMARY_MODEL = DEFAULT_GEMINI_MODEL
 
-PROD_CAPTION_PROVIDER = os.getenv(
-    "PROD_CAPTION_PROVIDER",
-    "gemini"
-)
+SCENE_FALLBACK_PROVIDER = "openrouter"
 
-PROD_CAPTION_MODEL = os.getenv(
-    "PROD_CAPTION_MODEL",
-    DEFAULT_GEMINI_MODEL
-)
-# =========================================================
-# GOLDEN RECAP MM - TASK ROUTER
-# =========================================================
-
-def router_text(
-    task,
-    prompt,
-    system_instruction=None,
-):
-    """
-    Route text AI tasks by task name.
-
-    DEV:
-        Translation / Caption -> configured free model
-
-    PRODUCTION:
-        Translation / Caption -> configured production model
-
-    Scene Analysis / English Recap:
-        Gemini
-    """
-
-    task = str(task or "").lower().strip()
-
-    # -----------------------------------------------------
-    # SCENE ANALYSIS
-    # -----------------------------------------------------
-
-    if task in [
-        "scene",
-        "scene_analysis",
-        "movie_scene",
-        "animal_scene",
-    ]:
-        return gemini_text(
-            prompt,
-            model=DEFAULT_GEMINI_MODEL,
-            system_instruction=system_instruction,
-        )
+SCENE_FALLBACK_MODEL = "openai/gpt-6-luna"
 
     # -----------------------------------------------------
     # ENGLISH RECAP
