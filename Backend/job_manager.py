@@ -468,20 +468,20 @@ def temporary_worker(job_id):
         # -------------------------------------------------
 
         response = (
-    SUPABASE_CLIENT
-    .table("jobs")
-    .update({
-        "transcript": transcript,
-        "updated_at": datetime.utcnow().isoformat(),
-    })
-    .eq("job_id", job_id)
-    .execute()
-)
+            SUPABASE_CLIENT
+            .table("jobs")
+            .update({
+                "transcript": transcript,
+                "updated_at": datetime.utcnow().isoformat(),
+            })
+            .eq("job_id", job_id)
+            .execute()
+        )
 
-if not response.data:
-    raise RuntimeError(
-        "Could not save transcript."
-    )
+        if not response.data:
+            raise RuntimeError(
+                "Could not save transcript."
+            )
 
         # -------------------------------------------------
         # 30% - SCENE ANALYSING
