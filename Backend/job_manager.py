@@ -212,13 +212,25 @@ def create_job(
 
 def get_job(job_id):
 
-    with JOBS_LOCK:
-        job = JOBS.get(job_id)
+    if SUPABASE_CLIENT is None:
+        raise RuntimeError(
+            "Supabase is not configured."
+        )
 
-        if job is None:
-            return None
+    response = (
+        SUPABASE_CLIENT
+        .table("jobs")
+        .select("*")
+        .eq("job_id", job_id)
+        .execute()
+    )
 
-        return public_job(job)
+    if not response.data:
+        return None
+
+    job = response.data[0]
+
+    return public_job(job)
 
 
 # =========================================================
