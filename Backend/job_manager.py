@@ -239,25 +239,52 @@ def get_job(job_id):
 
 def cancel_job(job_id):
 
-    with JOBS_LOCK:
-        job = JOBS.get(job_id)
+    if SUPABASE_CLIENT is None:
+        raise RuntimeError(
+            "Supabase is not configured."
+        )
 
-        if job is None:
-            return None
+    response = (
+        SUPABASE_CLIENT
+        .table("jobs")
+        .select("*")
+        .eq("job_id", job_id)
+        .execute()
+    )
 
-        if job["status"] in [
-            "completed",
-            "failed",
-            "cancelled",
-        ]:
-            return public_job(job)
+    if not response.data:
+        return None
 
-        job["cancel_requested"] = True
-        job["status"] = "cancelling"
-        job["message"] = "Cancellation requested."
-        job["updated_at"] = datetime.utcnow().isoformat()
+    job = response.data[0]
 
+    if job["status"] in [
+        "completed",
+        "failed",
+        "cancelled",
+    ]:
         return public_job(job)
+
+    updates = {
+        "cancel_requested": True,
+        "status": "cancelling",
+        "message": "Cancellation requested.",
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+
+    update_response = (
+        SUPABASE_CLIENT
+        .table("jobs")
+        .update(updates)
+        .eq("job_id", job_id)
+        .execute()
+    )
+
+    if not update_response.data:
+        return None
+
+    return public_job(
+        update_response.data[0]
+    )
 
 
 # =========================================================
